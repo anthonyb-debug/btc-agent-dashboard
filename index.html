@@ -970,6 +970,7 @@ select.filter-select {
   gap: 16px;
   align-items: center;
   padding: 4px 0;
+  width: 100%;
 }
 
 .donut-svg { flex-shrink: 0; width: 210px; height: 210px; }
@@ -1038,6 +1039,13 @@ select.filter-select {
 .legend::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 .legend::-webkit-scrollbar-thumb:hover { background: var(--text-4); }
 .legend { scrollbar-width: thin; scrollbar-color: var(--border2) var(--surface2); }
+
+/* ── AHT LIST SCROLLBAR (matches legend; blends in dark mode) ── */
+#aht-bar-list::-webkit-scrollbar { width: 4px; }
+#aht-bar-list::-webkit-scrollbar-track { background: var(--surface2); border-radius: 4px; }
+#aht-bar-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+#aht-bar-list::-webkit-scrollbar-thumb:hover { background: var(--text-4); }
+#aht-bar-list { scrollbar-width: thin; scrollbar-color: var(--border2) var(--surface2); }
 
 /* ── LEADERBOARD / TABLE ── */
 .leaderboard-card {
@@ -1508,6 +1516,16 @@ tbody tr:hover td { background: var(--surface2); }
 button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 /* ── SCORE INFO TOOLTIP ── */
 .score-tip-visible { display:block !important; }
+/* ── CHANGE ANIMATIONS (month/shift/view switches) ── */
+@keyframes chartEnter { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+.chart-enter { animation: chartEnter 0.45s cubic-bezier(0.22,0.61,0.36,1) both; }
+@keyframes donutEnter { from { opacity:0; transform: scale(0.9) rotate(-6deg); } to { opacity:1; transform:none; } }
+.donut-enter { animation: donutEnter 0.55s cubic-bezier(0.22,0.61,0.36,1) both; transform-origin: 90px 90px; }
+@keyframes statPop { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+.stat-pop { animation: statPop 0.5s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .chart-enter, .donut-enter, .stat-pop { animation: none !important; }
+}
 </style>
 </head>
 <body>
@@ -1608,7 +1626,7 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
     </div>
     <div class="filter-chip" id="agent-filter-group" style="display:none;">
       <div class="filter-chip-label">Agent</div>
-      <select class="filter-select" id="filter-agent" onchange="renderAll()" aria-label="Select agent"><option value="all">All agents</option></select>
+      <select class="filter-select" id="filter-agent" onchange="renderAnimated()" aria-label="Select agent"><option value="all">All agents</option></select>
     </div>
     <div class="filters-separator"></div>
     <div class="filter-chip" style="padding-right:4px;">
@@ -1649,7 +1667,7 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
       <div class="charts-row">
         <div class="card">
           <div class="card-header"><div class="card-title" id="inbound-chart-title">Inbound Calls by Agent</div></div>
-          <div class="card-body" style="height:320px;display:flex;align-items:center;justify-content:center;"><div class="donut-wrap"><svg class="donut-svg" id="donut-inbound" viewBox="0 0 180 180"></svg><div class="legend" id="legend-inbound"></div></div></div>
+          <div class="card-body" style="height:320px;display:flex;align-items:center;"><div class="donut-wrap"><svg class="donut-svg" id="donut-inbound" viewBox="0 0 180 180"></svg><div class="legend" id="legend-inbound"></div></div></div>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title" id="aht-chart-title">Avg Handle Time by Agent</div><div style="font-size:11px;color:var(--text-4);font-weight:600;">Lower is better</div></div>
@@ -1952,6 +1970,35 @@ let allData=[], currentMonth=MONTHS[_now.getMonth()], currentYear=String(_now.ge
 function applyShift(rows){ return currentShift==='all'?rows:rows.filter(r=>r.shift===currentShift); }
 const SHIFT_LABELS={all:'All Shifts',AM:'AM · Morning',PM:'PM · Midnight'};
 
+/* ── ANIMATION SUPPORT ── */
+let _anim=false;   // true only for user-initiated changes (not silent auto-refresh)
+const _reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const _raf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : (fn=>setTimeout(()=>fn(Date.now()),16));
+const _now2 = ()=> (window.performance&&performance.now)?performance.now():Date.now();
+/* Count-up on a number/time value; animates from its previously shown value. */
+function animateNum(id,to,fmt,dur){
+  const el=document.getElementById(id); if(!el) return;
+  fmt=fmt||(v=>Math.round(v).toLocaleString());
+  to=to||0; dur=dur||650;
+  const from=(typeof el._val==='number')?el._val:0;
+  el._val=to;
+  if(_reduceMotion||!_anim||from===to){ el.textContent=fmt(to); return; }
+  const start=_now2(), ease=t=>1-Math.pow(1-t,3);
+  (function step(now){
+    const p=Math.min(1,((now||_now2())-start)/dur);
+    el.textContent=fmt(from+(to-from)*ease(p));
+    if(p<1) _raf(step); else el.textContent=fmt(to);
+  })(start);
+}
+/* Re-trigger a CSS enter animation on an element. */
+function enterAnim(el,cls){
+  if(!el||_reduceMotion||!_anim) return;
+  cls=cls||'chart-enter';
+  el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+}
+/* User-initiated render (plays animations). */
+function renderAnimated(){ _anim=true; renderAll(); }
+
 document.addEventListener('DOMContentLoaded',function(){
   const el=document.getElementById('filter-month'); if(el) el.textContent=currentMonth+' '+currentYear;
   const yr=document.getElementById('filter-year'); if(yr) yr.textContent=currentYear;
@@ -1963,14 +2010,14 @@ function setShift(s){
   document.getElementById('btn-shift-all').className='btn-toggle'+(s==='all'?' active':'');
   document.getElementById('btn-shift-am').className='btn-toggle'+(s==='AM'?' active':'');
   document.getElementById('btn-shift-pm').className='btn-toggle'+(s==='PM'?' active':'');
-  renderAll();
+  renderAnimated();
 }
 
 function setView(v){
   currentView=v;
   document.getElementById('btn-monthly').className='btn-toggle'+(v==='monthly'?' active':'');
   document.getElementById('btn-alltime').className='btn-toggle'+(v==='alltime'?' active':'');
-  renderAll();
+  renderAnimated();
 }
 function setSection(s){
   currentSection=s;
@@ -1980,7 +2027,7 @@ function setSection(s){
   document.getElementById('section-agent').style.display=s==='agent'?'':'none';
   document.getElementById('agent-filter-group').style.display=s==='agent'?'':'none';
   if(s==='team') document.getElementById('filter-agent').value='all';
-  renderAll();
+  renderAnimated();
 }
 function changeMonth(dir){
   const idx=MONTHS.indexOf(currentMonth);
@@ -1997,7 +2044,7 @@ function changeMonth(dir){
   document.getElementById('filter-month').textContent=currentMonth+' '+currentYear;
   document.getElementById('filter-year').textContent=currentYear;
   updateMonthNavBtn();
-  renderAll();
+  renderAnimated();
 }
 function updateMonthNavBtn(){
   const btn=document.querySelector('.filter-nav[onclick="changeMonth(1)"]');
@@ -2045,6 +2092,7 @@ async function loadData(silent=false){
     _firstLoad=false;
     document.getElementById('info-latest').textContent=now.toLocaleDateString();
     document.getElementById('info-synced').textContent=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    _anim=!silent;
     renderAll(!silent);
   }catch(e){
     document.getElementById('error-area').innerHTML=`<div class="error-msg">⚠️ Could not load data: ${e.message}</div>`;
@@ -2091,6 +2139,7 @@ function renderAll(animate=false){
     renderAgentSection();
   }
   updateSortLabel();
+  _anim=false;
 }
 function set(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; }
 
@@ -2119,9 +2168,9 @@ function renderStatCards(){
   const ahtW=rows.reduce((s,r)=>s+r.aht*(r.totalCalls||1),0);
   const ahtN=rows.reduce((s,r)=>s+(r.totalCalls||1),0)||1;
   const avgAht=Math.round(ahtW/ahtN);
-  set('s-inbound',inbound.toLocaleString()); set('s-outbound',outbound.toLocaleString());
-  set('s-total',total.toLocaleString());
-  set('s-talk',fmtShort(avgTalk)); set('s-hold',fmtShort(avgHold)); set('s-aht',fmtTime(avgAht));
+  animateNum('s-inbound',inbound); animateNum('s-outbound',outbound);
+  animateNum('s-total',total);
+  animateNum('s-talk',avgTalk,fmtShort); animateNum('s-hold',avgHold,fmtShort); animateNum('s-aht',avgAht,fmtTime);
 
   if(currentView==='monthly'){
     const pr=prevMonthRows();
@@ -2179,6 +2228,7 @@ function buildCharts(){
     .map(a=>({label:a.name,val:a.inbound,display:a.inbound.toLocaleString()}));
   const totalInb=agg.reduce((s,a)=>s+a.inbound,0);
   buildDonut('donut-inbound','legend-inbound',inb,totalInb.toLocaleString(),'Inbound');
+  enterAnim(document.getElementById('donut-inbound'),'donut-enter');
   buildAhtBars(agg);
 }
 /* AHT by agent — ranked best (lowest) first; shorter, greener bar = better */
@@ -2192,13 +2242,14 @@ function buildAhtBars(agg){
     const pct=Math.round(a.aht/maxAht*100);
     const col=barColor(a.aht);
     const rank=i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
+    const grow=_anim&&!_reduceMotion;
     return `<div style="cursor:pointer;" onclick="jumpToAgent('${a.name.replace(/'/g,"\\'")}')">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
         <span style="font-size:12px;font-weight:600;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;">${rank}${a.name}</span>
         <span style="font-size:12px;font-weight:800;color:${col};flex-shrink:0;margin-left:8px;">${fmtTime(a.aht)}</span>
       </div>
       <div style="position:relative;background:var(--border);border-radius:20px;height:8px;overflow:hidden;">
-        <div style="height:100%;border-radius:20px;background:${col};width:${pct}%;transition:width .6s ease;"></div>
+        <div data-w="${pct}" style="height:100%;border-radius:20px;background:${col};width:${grow?0:pct}%;transition:width .6s cubic-bezier(0.22,0.61,0.36,1);"></div>
       </div>
     </div>`;
   }).join('');
@@ -2207,6 +2258,7 @@ function buildAhtBars(agg){
     <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#F5871F;margin-left:10px;"></span> slightly over
     <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#DC2626;margin-left:10px;"></span> well over</div>`;
   el.innerHTML=rowsHTML+targetTip;
+  if(_anim&&!_reduceMotion){ _raf(()=>{ el.querySelectorAll('[data-w]').forEach(b=>{ b.style.width=b.getAttribute('data-w')+'%'; }); }); }
 }
 
 /* ── LEADERBOARD TABLE ── */
@@ -2250,6 +2302,7 @@ function renderLeaderboard(){
       </tr>`;}).join('')}</tbody>
   </table></div>`;
   wrap.innerHTML=html;
+  enterAnim(wrap,'chart-enter');
 }
 function jumpToAgent(name){
   setSection('agent');
@@ -2284,6 +2337,7 @@ function renderTrendLineChart(){
   sorted.forEach((mm,i)=>{ xlabels+=`<text x="${px(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#64748b">${mm.shortLabel}</text>`; });
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width',W); svg.setAttribute('height',H);
   svg.innerHTML=grid+axes+ylabels+lines+dots+xlabels;
+  enterAnim(svg,'chart-enter');
 }
 
 /* ── INSIGHTS ── */
@@ -2330,10 +2384,10 @@ function renderAgentSection(){
   const cur=rows.find(r=>r.monthName===currentMonth&&r.yearNum===parseInt(currentYear));
   set('a-calls-label',`Total Calls — ${currentMonth} ${currentYear}`);
   set('a-aht-label',`Avg Handle Time — ${currentMonth} ${currentYear}`);
-  set('a-calls',(cur?cur.totalCalls:0).toLocaleString());
-  set('a-inbound',(cur?cur.inbound:0).toLocaleString());
-  set('a-outbound',(cur?cur.outbound:0).toLocaleString());
-  set('a-aht',cur?fmtTime(cur.aht):'0:00:00');
+  animateNum('a-calls',cur?cur.totalCalls:0);
+  animateNum('a-inbound',cur?cur.inbound:0);
+  animateNum('a-outbound',cur?cur.outbound:0);
+  animateNum('a-aht',cur?cur.aht:0,fmtTime);
 
   const monthAgg=aggregateByAgent(applyShift(allData.filter(monthMatches)));
   const ranked=[...monthAgg].sort((a,b)=>b.totalCalls-a.totalCalls);
@@ -2422,6 +2476,7 @@ function buildAgentBarChart(rows){
   const axes=`<line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT+plotH}" stroke="#CBD5E1"/><line x1="${padL}" x2="${W-padR}" y1="${padT+plotH}" y2="${padT+plotH}" stroke="#CBD5E1"/><line x1="${W-padR}" x2="${W-padR}" y1="${padT}" y2="${padT+plotH}" stroke="#FDA4AF" stroke-dasharray="3,3"/>`;
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width',W); svg.setAttribute('height',H);
   svg.innerHTML=grid+axes+rax+bars+line+ldots+labels;
+  enterAnim(svg,'chart-enter');
 }
 
 function renderAgentTable(rows){
