@@ -1544,7 +1544,6 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
     <nav class="topbar-nav" aria-label="Main sections">
       <button class="nav-pill active" id="btn-section-team" onclick="setSection('team')">Team Stats</button>
       <button class="nav-pill" id="btn-section-agent" onclick="setSection('agent')">Agent Stats</button>
-      <button class="nav-pill" id="btn-section-watchlist" onclick="setSection('watchlist')">⚡ Efficiency Watch</button>
     </nav>
 
     <div class="topbar-right">
@@ -1637,36 +1636,15 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
         <div class="highlight-card"><div class="hc-eyebrow">⚡ Best Avg Handle Time</div><div class="hc-name" id="top-aht-name">—</div><div class="hc-sub" id="top-aht-sub">—</div></div>
       </div>
 
-      <!-- Goal Tracker -->
-      <div class="goal-card" id="goal-card">
-        <div style="flex-shrink:0;">
-          <div class="goal-label">Monthly Target</div>
-          <div class="goal-title">🎯 Team Calls Goal</div>
-        </div>
-        <div class="goal-bar-wrap">
-          <div class="goal-bar-top">
-            <span class="goal-bar-label-text" id="goal-bar-label">0 / 0 calls</span>
-            <span class="goal-pct" id="goal-pct-label">0%</span>
-          </div>
-          <div class="goal-track"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
-          <div class="goal-subtext" id="goal-subtext">—</div>
-        </div>
-        <div class="goal-stats">
-          <div class="goal-stat"><div class="gval" id="goal-current">—</div><div class="glabel">This Month</div></div>
-          <div class="goal-stat"><div class="gval" id="goal-remaining">—</div><div class="glabel">Remaining</div></div>
-          <div class="goal-stat"><div class="gval" id="goal-target">—</div><div class="glabel">Target</div></div>
-        </div>
-      </div>
-
-      <!-- Donut Charts -->
+      <!-- Charts -->
       <div class="charts-row">
         <div class="card">
           <div class="card-header"><div class="card-title" id="inbound-chart-title">Inbound Calls by Agent</div></div>
           <div class="card-body"><div class="donut-wrap"><svg class="donut-svg" id="donut-inbound" viewBox="0 0 180 180"></svg><div class="legend" id="legend-inbound"></div></div></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title" id="talk-chart-title">Talk Time by Agent</div></div>
-          <div class="card-body"><div class="donut-wrap"><svg class="donut-svg" id="donut-talk" viewBox="0 0 180 180"></svg><div class="legend" id="legend-talk"></div></div></div>
+          <div class="card-header"><div class="card-title" id="aht-chart-title">Avg Handle Time by Agent</div><div style="font-size:11px;color:var(--text-4);font-weight:600;">Lower is better</div></div>
+          <div class="card-body"><div id="aht-bar-list" style="display:flex;flex-direction:column;gap:9px;min-height:150px;"></div></div>
         </div>
       </div>
 
@@ -1720,67 +1698,6 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
         </div>
       </div>
 
-    </div>
-
-    <!-- ═══ EFFICIENCY WATCHLIST SECTION ═══ -->
-    <div id="section-watchlist" style="display:none">
-      <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
-        <div class="stat-card"><div class="stat-info"><label>AHT Target</label><div class="stat-num" id="wl-target">—</div><div class="stat-trend">At or below is healthy</div></div><div class="stat-icon icon-blue"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
-        <div class="stat-card"><div class="stat-info"><label>Over Target — Monthly</label><div class="stat-num" id="wl-month-flagged-count">—</div><div class="stat-trend" id="wl-month-flagged-sub"></div></div><div class="stat-icon icon-orange"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 17h.01"/></svg></div></div>
-        <div class="stat-card"><div class="stat-info"><label>Over Target — Quarterly</label><div class="stat-num" id="wl-quarter-flagged-count">—</div><div class="stat-trend" id="wl-quarter-flagged-sub"></div></div><div class="stat-icon icon-purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 17h.01"/></svg></div></div>
-        <div class="stat-card"><div class="stat-info"><label>Needs Coaching</label><div class="stat-num" id="wl-flagged-count">—</div><div class="stat-trend" id="wl-flagged-sub"></div></div><div class="stat-icon icon-rose"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
-      </div>
-      <div style="font-size:11.5px;color:var(--text-3);margin:-6px 0 16px;line-height:1.5;">
-        "Needs Coaching" = an agent whose <strong>Average Handle Time is above the target</strong> for <strong>both</strong> the month <strong>and</strong> the quarter selected below. Lower AHT is better — the heatmap shades green under target and red over.
-      </div>
-
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
-        <span style="font-size:12px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.4px;">View</span>
-        <div class="view-toggle">
-          <button class="btn-toggle active" id="btn-wl-monthly" onclick="setWlView('monthly')">📅 Monthly</button>
-          <button class="btn-toggle" id="btn-wl-quarterly" onclick="setWlView('quarterly')">🗓️ Quarterly</button>
-        </div>
-      </div>
-
-      <div class="leaderboard-card" id="wl-card-monthly" style="margin-bottom:20px;">
-        <div class="lb-header">
-          <div class="lb-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0E8C8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Monthly Avg Handle Time — <span id="wl-month-period">—</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-            <div class="filter-chip" style="margin:0;"><div class="filter-chip-label">Month</div><select class="filter-select" id="wl-month-select" onchange="renderWatchlist()" aria-label="Select month"></select></div>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-3);cursor:pointer;"><input type="checkbox" id="wl-month-show-all" checked onchange="renderWatchlist()" style="cursor:pointer;"> Show all agents</label>
-          </div>
-        </div>
-        <div id="watchlist-monthly-wrap"><div class="loading"><div class="spinner"></div> Loading data…</div></div>
-        <div id="wl-month-legend" style="display:none;padding:10px 20px;font-size:11px;color:var(--text-3);border-top:1px solid var(--border);align-items:center;gap:8px;">
-          Heatmap: <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.7);"></span> well under target
-          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.15);margin-left:6px;"></span> just under
-          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.15);margin-left:10px;"></span> just over
-          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.7);margin-left:6px;"></span> well over target
-        </div>
-      </div>
-
-      <div class="leaderboard-card" id="wl-card-quarterly" style="display:none;">
-        <div class="lb-header">
-          <div class="lb-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Quarterly Avg Handle Time — <span id="wl-quarter-period">—</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-            <div class="filter-chip" style="margin:0;"><div class="filter-chip-label">Quarter</div><select class="filter-select" id="wl-quarter-select" onchange="renderWatchlist()" aria-label="Select quarter"></select></div>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-3);cursor:pointer;"><input type="checkbox" id="wl-quarter-show-all" checked onchange="renderWatchlist()" style="cursor:pointer;"> Show all agents</label>
-          </div>
-        </div>
-        <div id="watchlist-quarterly-wrap"><div class="loading"><div class="spinner"></div> Loading data…</div></div>
-        <div id="wl-quarter-legend" style="display:none;padding:10px 20px;font-size:11px;color:var(--text-3);border-top:1px solid var(--border);align-items:center;gap:8px;">
-          Heatmap: <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.7);"></span> well under target
-          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.15);margin-left:6px;"></span> just under
-          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.15);margin-left:10px;"></span> just over
-          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.7);margin-left:6px;"></span> well over target
-        </div>
-      </div>
     </div>
 
     <!-- ═══ AGENT SECTION ═══ -->
@@ -2018,7 +1935,6 @@ document.addEventListener('DOMContentLoaded',function(){
   const el=document.getElementById('filter-month'); if(el) el.textContent=currentMonth+' '+currentYear;
   const yr=document.getElementById('filter-year'); if(yr) yr.textContent=currentYear;
   updateMonthNavBtn();
-  const t=document.getElementById('wl-target'); if(t) t.textContent=fmtTime(AHT_TARGET_SEC);
 });
 
 function setView(v){
@@ -2031,21 +1947,11 @@ function setSection(s){
   currentSection=s;
   document.getElementById('btn-section-team').className='nav-pill'+(s==='team'?' active':'');
   document.getElementById('btn-section-agent').className='nav-pill'+(s==='agent'?' active':'');
-  document.getElementById('btn-section-watchlist').className='nav-pill'+(s==='watchlist'?' active':'');
   document.getElementById('section-team').style.display=s==='team'?'':'none';
   document.getElementById('section-agent').style.display=s==='agent'?'':'none';
-  document.getElementById('section-watchlist').style.display=s==='watchlist'?'':'none';
   document.getElementById('agent-filter-group').style.display=s==='agent'?'':'none';
-  if(s==='team'||s==='watchlist') document.getElementById('filter-agent').value='all';
+  if(s==='team') document.getElementById('filter-agent').value='all';
   renderAll();
-}
-function setWlView(v){
-  wlView=v;
-  document.getElementById('btn-wl-monthly').className='btn-toggle'+(v==='monthly'?' active':'');
-  document.getElementById('btn-wl-quarterly').className='btn-toggle'+(v==='quarterly'?' active':'');
-  document.getElementById('wl-card-monthly').style.display=v==='monthly'?'':'none';
-  document.getElementById('wl-card-quarterly').style.display=v==='quarterly'?'':'none';
-  renderWatchlist();
 }
 function changeMonth(dir){
   const idx=MONTHS.indexOf(currentMonth);
@@ -2105,7 +2011,6 @@ async function loadData(silent=false){
     const prev=sel.value;
     sel.innerHTML='<option value="all">All agents</option>'+agents.map(a=>`<option value="${a}">${a}</option>`).join('');
     sel.value=agents.includes(prev)?prev:'all';
-    populateWatchlistFilters();
     const now=new Date();
     _firstLoad=false;
     document.getElementById('info-latest').textContent=now.toLocaleDateString();
@@ -2146,14 +2051,12 @@ function renderAll(animate=false){
   const infoScope=document.getElementById('info-scope'); if(infoScope) infoScope.textContent=scopeLabel;
   set('lb-period',scopeLabel);
   set('inbound-chart-title',`Inbound Calls by Agent — ${scopeLabel}`);
-  set('talk-chart-title',`Talk Time by Agent — ${scopeLabel}`);
+  set('aht-chart-title',`Avg Handle Time by Agent — ${scopeLabel}`);
   if(currentSection==='team'){
-    renderStatCards(); renderTopPerformers(); renderGoal();
-    buildDonuts(); renderLeaderboard(); renderTrendLineChart(); renderInsights();
+    renderStatCards(); renderTopPerformers();
+    buildCharts(); renderLeaderboard(); renderTrendLineChart(); renderInsights();
   } else if(currentSection==='agent'){
     renderAgentSection();
-  } else if(currentSection==='watchlist'){
-    renderWatchlist();
   }
   updateSortLabel();
 }
@@ -2217,21 +2120,6 @@ function renderTopPerformers(){
 }
 
 /* ── GOAL TRACKER (team calls, monthly) ── */
-function renderGoal(){
-  const rows=currentView==='monthly'?allData.filter(monthMatches):scopedRows();
-  const calls=rows.reduce((s,r)=>s+r.totalCalls,0);
-  const target=TEAM_CALL_TARGET;
-  const pct=Math.min(100,Math.round(calls/target*100));
-  set('goal-bar-label',`${calls.toLocaleString()} / ${target.toLocaleString()} calls`);
-  set('goal-pct-label',pct+'%');
-  const fill=document.getElementById('goal-fill');
-  if(fill){ fill.style.width=pct+'%'; fill.style.background=calls>=target?'linear-gradient(90deg,#059669,#34d399)':'linear-gradient(90deg,#0E8C8C,#5BC0C0)'; }
-  set('goal-current',calls.toLocaleString());
-  set('goal-remaining',Math.max(0,target-calls).toLocaleString());
-  set('goal-target',target.toLocaleString());
-  set('goal-subtext',calls>=target?'🎉 Target reached — great work!':`${Math.max(0,target-calls).toLocaleString()} more calls to hit the ${currentView==='monthly'?currentMonth:'all-time'} target.`);
-}
-
 /* ── DONUTS ── */
 const DONUT_COLORS=['var(--brand)','var(--accent)','#17A2A6','#EFA94A','#0B6E6E','var(--purple)','var(--cyan)','var(--pink)','var(--teal)','var(--indigo)'];
 function buildDonut(svgId,legendId,items,centerVal,centerLabel){
@@ -2253,16 +2141,40 @@ function buildDonut(svgId,legendId,items,centerVal,centerLabel){
   svg.innerHTML=paths+`<text class="donut-center-val" x="90" y="86" text-anchor="middle">${centerVal}</text><text class="donut-center-label" x="90" y="104" text-anchor="middle">${centerLabel}</text>`;
   legend.innerHTML=items.map((item,idx)=>`<div class="legend-item"><div class="legend-dot" style="background:${DONUT_COLORS[idx%DONUT_COLORS.length]}"></div><span>${item.label}</span><span style="margin-left:auto;font-weight:700;color:var(--text-1);">${item.display||item.val}</span></div>`).join('');
 }
-function buildDonuts(){
+function buildCharts(){
   const agg=aggregateByAgent(scopedRows());
   const inb=[...agg].filter(a=>a.inbound>0).sort((a,b)=>b.inbound-a.inbound).slice(0,10)
     .map(a=>({label:a.name,val:a.inbound,display:a.inbound.toLocaleString()}));
   const totalInb=agg.reduce((s,a)=>s+a.inbound,0);
   buildDonut('donut-inbound','legend-inbound',inb,totalInb.toLocaleString(),'Inbound');
-  const talk=[...agg].filter(a=>a.talkTime>0).sort((a,b)=>b.talkTime-a.talkTime).slice(0,10)
-    .map(a=>({label:a.name,val:a.talkTime,display:fmtShort(a.talkTime)}));
-  const totalTalk=agg.reduce((s,a)=>s+a.talkTime,0);
-  buildDonut('donut-talk','legend-talk',talk,fmtShort(totalTalk),'Talk');
+  buildAhtBars(agg);
+}
+/* AHT by agent — ranked best (lowest) first; shorter, greener bar = better */
+function buildAhtBars(agg){
+  const el=document.getElementById('aht-bar-list'); if(!el) return;
+  const rows=[...agg].filter(a=>a.aht>0).sort((a,b)=>a.aht-b.aht);
+  if(!rows.length){ el.innerHTML='<div style="padding:14px 2px;color:var(--text-4);font-size:13px;font-weight:500;">No data for this scope.</div>'; return; }
+  const maxAht=Math.max(...rows.map(a=>a.aht),AHT_TARGET_SEC);
+  const barColor=sec=> sec<=AHT_TARGET_SEC?'#059669' : sec<=AHT_TARGET_SEC*1.25?'#F5871F' : '#DC2626';
+  const rowsHTML=rows.map((a,i)=>{
+    const pct=Math.round(a.aht/maxAht*100);
+    const col=barColor(a.aht);
+    const rank=i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
+    return `<div style="cursor:pointer;" onclick="jumpToAgent('${a.name.replace(/'/g,"\\'")}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+        <span style="font-size:12px;font-weight:600;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;">${rank}${a.name}</span>
+        <span style="font-size:12px;font-weight:800;color:${col};flex-shrink:0;margin-left:8px;">${fmtTime(a.aht)}</span>
+      </div>
+      <div style="position:relative;background:var(--border);border-radius:20px;height:8px;overflow:hidden;">
+        <div style="height:100%;border-radius:20px;background:${col};width:${pct}%;transition:width .6s ease;"></div>
+      </div>
+    </div>`;
+  }).join('');
+  const targetTip=`<div style="margin-top:2px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;color:var(--text-4);font-weight:600;display:flex;align-items:center;gap:6px;">
+    <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#059669;"></span> ≤ ${fmtTime(AHT_TARGET_SEC)} target
+    <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#F5871F;margin-left:10px;"></span> slightly over
+    <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#DC2626;margin-left:10px;"></span> well over</div>`;
+  el.innerHTML=rowsHTML+targetTip;
 }
 
 /* ── LEADERBOARD TABLE ── */
@@ -2561,72 +2473,6 @@ function renderPerfTracker(agentName,rows,cur,monthAgg){
 }
 function setBar(barId,numsId,pct,txt){ const b=document.getElementById(barId); if(b) b.style.width=pct+'%'; const n=document.getElementById(numsId); if(n) n.textContent=txt; }
 function vsBar(barId,youId,avgId,you,avg){ const max=Math.max(you,avg,1),pct=Math.round(you/max*100); const b=document.getElementById(barId); if(b){b.style.width=pct+'%';b.style.background=you>=avg?'#0E8C8C':'#F5871F';} const y=document.getElementById(youId); if(y) y.textContent=you.toLocaleString(); const a=document.getElementById(avgId); if(a) a.textContent=`/ avg ${avg.toLocaleString()}`; }
-
-/* ── EFFICIENCY WATCHLIST (AHT vs target) ── */
-const QUARTER_LABELS=['Q1 (Jan–Mar)','Q2 (Apr–Jun)','Q3 (Jul–Sep)','Q4 (Oct–Dec)'];
-let wlMonthSortCol='aht',wlMonthSortDir=1,wlQSortCol='aht',wlQSortDir=1;
-function wlMonthSort(c){ if(wlMonthSortCol===c) wlMonthSortDir*=-1; else{wlMonthSortCol=c;wlMonthSortDir=1;} renderWatchlist(); }
-function wlQSort(c){ if(wlQSortCol===c) wlQSortDir*=-1; else{wlQSortCol=c;wlQSortDir=1;} renderWatchlist(); }
-function monthSortKey(mn,yr){ return parseInt(yr)*12+MONTHS.indexOf(mn); }
-function ahtCellColor(sec){ if(!sec) return 'transparent'; const t=AHT_TARGET_SEC; if(sec<=t){ const ratio=Math.min(1,(t-sec)/t); return `rgba(5,150,105,${(0.15+ratio*0.55).toFixed(2)})`; } const over=Math.min(1,(sec-t)/t); return `rgba(220,38,38,${(0.15+over*0.55).toFixed(2)})`; }
-
-function populateWatchlistFilters(){
-  const mSel=document.getElementById('wl-month-select'), qSel=document.getElementById('wl-quarter-select');
-  if(!mSel||!qSel) return;
-  const pm=mSel.value, pq=qSel.value;
-  const mMap=new Map(), qMap=new Map();
-  allData.forEach(r=>{ const p=r.month.trim().split(' '); const mn=p[0],yr=p[1]; if(!mn||!yr) return; mMap.set(`${mn}|${yr}`,{mn,yr,sort:monthSortKey(mn,yr)}); const qi=Math.floor(MONTHS.indexOf(mn)/3); qMap.set(`${qi}|${yr}`,{qi,yr,sort:parseInt(yr)*4+qi}); });
-  const mList=[...mMap.values()].sort((a,b)=>a.sort-b.sort), qList=[...qMap.values()].sort((a,b)=>a.sort-b.sort);
-  if(!mList.length) return;
-  mSel.innerHTML=mList.map(m=>`<option value="${m.mn}|${m.yr}">${m.mn} ${m.yr}</option>`).join('');
-  qSel.innerHTML=qList.map(q=>`<option value="${q.qi}|${q.yr}">${QUARTER_LABELS[q.qi]} ${q.yr}</option>`).join('');
-  const mVals=mList.map(m=>`${m.mn}|${m.yr}`), qVals=qList.map(q=>`${q.qi}|${q.yr}`);
-  const curKey=`${currentMonth}|${currentYear}`, curQKey=`${Math.floor(MONTHS.indexOf(currentMonth)/3)}|${currentYear}`;
-  mSel.value=mVals.includes(pm)?pm:(mVals.includes(curKey)?curKey:mVals[mVals.length-1]);
-  qSel.value=qVals.includes(pq)?pq:(qVals.includes(curQKey)?curQKey:qVals[qVals.length-1]);
-}
-
-function agentsForMonthKey(mn,yr){ return aggregateByAgent(allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===mn&&p[1]===yr;})); }
-function agentsForQuarter(qi,yr){ const mset=new Set([MONTHS[qi*3],MONTHS[qi*3+1],MONTHS[qi*3+2]]); return aggregateByAgent(allData.filter(r=>{const p=r.month.trim().split(' ');return mset.has(p[0])&&p[1]===yr;})); }
-
-function renderWatchlist(){
-  if(!allData.length) return;
-  const mSel=document.getElementById('wl-month-select'), qSel=document.getElementById('wl-quarter-select');
-  if(!mSel.value||!qSel.value) populateWatchlistFilters();
-  const [mn,myr]=(mSel.value||'|').split('|');
-  const [qi,qyr]=(qSel.value||'|').split('|');
-  const monthAgents=agentsForMonthKey(mn,myr);
-  const quarterAgents=agentsForQuarter(parseInt(qi),qyr);
-  const monthOver=monthAgents.filter(a=>a.totalCalls>0&&a.aht>AHT_TARGET_SEC);
-  const quarterOver=quarterAgents.filter(a=>a.totalCalls>0&&a.aht>AHT_TARGET_SEC);
-  const qOverNames=new Set(quarterOver.map(a=>a.name));
-  const coaching=monthOver.filter(a=>qOverNames.has(a.name));
-  set('wl-month-flagged-count',monthOver.length); set('wl-month-flagged-sub',`of ${monthAgents.filter(a=>a.totalCalls>0).length} agents · ${mn} ${myr}`);
-  set('wl-quarter-flagged-count',quarterOver.length); set('wl-quarter-flagged-sub',`of ${quarterAgents.filter(a=>a.totalCalls>0).length} agents · ${QUARTER_LABELS[parseInt(qi)]||''} ${qyr}`);
-  set('wl-flagged-count',coaching.length); set('wl-flagged-sub',coaching.length?coaching.map(a=>a.name.split(' ')[0]).join(', '):'None — nice!');
-  set('wl-month-period',`${mn} ${myr}`); set('wl-quarter-period',`${QUARTER_LABELS[parseInt(qi)]||''} ${qyr}`);
-
-  renderWlTable('watchlist-monthly-wrap',monthAgents,'wl-month-show-all',wlMonthSortCol,wlMonthSortDir,'wlMonthSort',qOverNames);
-  renderWlTable('watchlist-quarterly-wrap',quarterAgents,'wl-quarter-show-all',wlQSortCol,wlQSortDir,'wlQSort',null);
-  document.getElementById('wl-month-legend').style.display='flex';
-  document.getElementById('wl-quarter-legend').style.display='flex';
-}
-function renderWlTable(wrapId,agents,showAllId,sc,sd,sortFn,coachSet){
-  const wrap=document.getElementById(wrapId); if(!wrap) return;
-  const showAll=document.getElementById(showAllId)?.checked;
-  let rows=agents.filter(a=>a.totalCalls>0);
-  if(!showAll) rows=rows.filter(a=>a.aht>AHT_TARGET_SEC);
-  if(!rows.length){ wrap.innerHTML='<div style="padding:16px;color:var(--text-4);font-size:13px;font-weight:500;">'+(agents.length?'No agents over target for this period. 🎉':'No data for this period.')+'</div>'; return; }
-  rows=[...rows].sort((a,b)=>{ const av=a[sc],bv=b[sc]; if(typeof av==='string') return sd*String(av).localeCompare(String(bv)); return sd*(bv-av); });
-  const th=(k,l)=>`<th class="sortable${sc===k?' sorted':''}" onclick="${sortFn}('${k}')">${l}${sc===k?(sd===1?' ↓':' ↑'):''}</th>`;
-  wrap.innerHTML=`<div style="overflow-x:auto"><table><thead><tr>
-    ${th('name','Agent')}${th('totalCalls','Calls')}${th('inbound','Inbound')}${th('outbound','Outbound')}${th('talkTime','Talk')}${th('holdTime','Hold')}${th('aht','AHT')}<th>Status</th>
-  </tr></thead><tbody>${rows.map((a,i)=>{ const over=a.aht>AHT_TARGET_SEC; const coach=coachSet&&coachSet.has(a.name)&&over;
-    return `<tr><td><div style="display:flex;align-items:center;gap:10px;">${avatarHTML(a.name,28,COLORS[i%COLORS.length])}<span style="font-weight:600;color:var(--text-1);cursor:pointer;" onclick="jumpToAgent('${a.name.replace(/'/g,"\\'")}')">${a.name}</span></div></td>
-    <td>${a.totalCalls.toLocaleString()}</td><td>${a.inbound.toLocaleString()}</td><td>${a.outbound.toLocaleString()}</td><td>${fmtTime(a.talkTime)}</td><td>${fmtTime(a.holdTime)}</td>
-    <td style="text-align:center;"><span style="display:inline-block;padding:3px 9px;border-radius:6px;font-weight:800;color:${over?'#DC2626':'#059669'};background:${ahtCellColor(a.aht)};">${fmtTime(a.aht)}</span></td>
-    <td>${coach?'<span class="admit-badge" style="background:var(--rose-lt);color:var(--rose);">🚩 Coaching</span>':over?'<span class="admit-badge" style="background:var(--amber-lt);color:var(--amber);">Over</span>':'<span class="admit-badge">On target</span>'}</td></tr>`; }).join('')}</tbody></table></div>`;
-}
 
 /* ── EXPORT CSV ── */
 function openExportModal(){
