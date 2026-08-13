@@ -1610,6 +1610,15 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
       <div class="filter-chip-label">Agent</div>
       <select class="filter-select" id="filter-agent" onchange="renderAll()" aria-label="Select agent"><option value="all">All agents</option></select>
     </div>
+    <div class="filters-separator"></div>
+    <div class="filter-chip" style="padding-right:4px;">
+      <div class="filter-chip-label">Shift</div>
+      <div class="view-toggle" style="border:none;background:transparent;padding:0;margin-left:2px;">
+        <button class="btn-toggle active" id="btn-shift-all" onclick="setShift('all')">All</button>
+        <button class="btn-toggle" id="btn-shift-am" onclick="setShift('AM')" title="Morning shift">☀️ AM</button>
+        <button class="btn-toggle" id="btn-shift-pm" onclick="setShift('PM')" title="Midnight shift">🌙 PM</button>
+      </div>
+    </div>
   </div>
 
   <!-- MAIN -->
@@ -1640,11 +1649,11 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
       <div class="charts-row">
         <div class="card">
           <div class="card-header"><div class="card-title" id="inbound-chart-title">Inbound Calls by Agent</div></div>
-          <div class="card-body"><div class="donut-wrap"><svg class="donut-svg" id="donut-inbound" viewBox="0 0 180 180"></svg><div class="legend" id="legend-inbound"></div></div></div>
+          <div class="card-body" style="height:320px;display:flex;align-items:center;justify-content:center;"><div class="donut-wrap"><svg class="donut-svg" id="donut-inbound" viewBox="0 0 180 180"></svg><div class="legend" id="legend-inbound"></div></div></div>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title" id="aht-chart-title">Avg Handle Time by Agent</div><div style="font-size:11px;color:var(--text-4);font-weight:600;">Lower is better</div></div>
-          <div class="card-body"><div id="aht-bar-list" style="display:flex;flex-direction:column;gap:9px;min-height:150px;"></div></div>
+          <div class="card-body" style="height:320px;"><div id="aht-bar-list" style="display:flex;flex-direction:column;gap:9px;height:100%;overflow-y:auto;padding-right:6px;"></div></div>
         </div>
       </div>
 
@@ -1910,6 +1919,14 @@ function parseTime(v){
 function fmtTime(sec){ sec=Math.max(0,Math.round(sec||0)); const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60; return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
 function fmtShort(sec){ sec=Math.max(0,Math.round(sec||0)); const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60; return h>0?`${h}h ${String(m).padStart(2,'0')}m`:`${m}m ${String(s).padStart(2,'0')}s`; }
 function parseNum(v){ return parseInt(String(v||'0').replace(/[, ]/g,''))||0; }
+/* Column I → shift bucket. Accepts AM/PM, Morning/Midnight, Night, etc. */
+function normShift(v){
+  const s=String(v||'').trim().toLowerCase();
+  if(!s) return '';
+  if(s.includes('am')||s.includes('morning')||s.includes('day')) return 'AM';
+  if(s.includes('pm')||s.includes('mid')||s.includes('night')||s.includes('eve')||s.includes('grave')) return 'PM';
+  return '';
+}
 
 /* ── CSV parser (handles quoted fields, commas, newlines) ── */
 function parseCSV(text){
@@ -1929,13 +1946,25 @@ function parseCSV(text){
 const _now=new Date();
 let allData=[], currentMonth=MONTHS[_now.getMonth()], currentYear=String(_now.getFullYear()),
     currentView='monthly', sortCol='totalCalls', sortDir=1, currentSection='team',
-    wlView='monthly', _firstLoad=true;
+    currentShift='all', wlView='monthly', _firstLoad=true;
+
+/* Restrict any row set to the selected shift (AM / PM), or pass all through. */
+function applyShift(rows){ return currentShift==='all'?rows:rows.filter(r=>r.shift===currentShift); }
+const SHIFT_LABELS={all:'All Shifts',AM:'AM · Morning',PM:'PM · Midnight'};
 
 document.addEventListener('DOMContentLoaded',function(){
   const el=document.getElementById('filter-month'); if(el) el.textContent=currentMonth+' '+currentYear;
   const yr=document.getElementById('filter-year'); if(yr) yr.textContent=currentYear;
   updateMonthNavBtn();
 });
+
+function setShift(s){
+  currentShift=s;
+  document.getElementById('btn-shift-all').className='btn-toggle'+(s==='all'?' active':'');
+  document.getElementById('btn-shift-am').className='btn-toggle'+(s==='AM'?' active':'');
+  document.getElementById('btn-shift-pm').className='btn-toggle'+(s==='PM'?' active':'');
+  renderAll();
+}
 
 function setView(v){
   currentView=v;
@@ -2003,6 +2032,7 @@ async function loadData(silent=false){
         month:(r[0]||'').trim(), name:(r[1]||'').trim(),
         inbound, inboundTime:parseTime(r[3]), outbound,
         talkTime:parseTime(r[5]), holdTime:parseTime(r[6]), aht:parseTime(r[7]),
+        shift:normShift(r[8]),
         totalCalls:inbound+outbound
       };
     }).filter(r=>r.name);
@@ -2036,7 +2066,7 @@ function aggregateByAgent(data){
   });
   return [...map.values()].map(a=>{ a.aht=a._calls>0?Math.round(a._ahtW/a._calls):0; delete a._ahtW; delete a._calls; return a; });
 }
-function scopedRows(){ return currentView==='monthly'?allData.filter(monthMatches):allData; }
+function scopedRows(){ return applyShift(currentView==='monthly'?allData.filter(monthMatches):allData); }
 function leaderboardRows(){
   let d=scopedRows();
   d=aggregateByAgent(d);
@@ -2047,7 +2077,9 @@ function leaderboardRows(){
 
 /* ── ORCHESTRATOR ── */
 function renderAll(animate=false){
-  const scopeLabel=currentView==='monthly'?`${currentMonth} ${currentYear}`:'All Time';
+  const base=currentView==='monthly'?`${currentMonth} ${currentYear}`:'All Time';
+  const shiftTag=currentShift==='all'?'':` · ${currentShift}`;
+  const scopeLabel=base+shiftTag;
   const infoScope=document.getElementById('info-scope'); if(infoScope) infoScope.textContent=scopeLabel;
   set('lb-period',scopeLabel);
   set('inbound-chart-title',`Inbound Calls by Agent — ${scopeLabel}`);
@@ -2067,7 +2099,7 @@ function prevMonthRows(){
   const idx=MONTHS.indexOf(currentMonth);
   const pM=MONTHS[(idx-1+12)%12];
   const pY=idx===0?String(parseInt(currentYear)-1):currentYear;
-  return allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===pM&&p[1]===pY;});
+  return applyShift(allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===pM&&p[1]===pY;}));
 }
 function trendHTML(cur,prev,lowerBetter=false){
   if(!prev||prev===0) return '';
@@ -2230,7 +2262,7 @@ function niceCeil(v){ if(v<=0) return 10; const mag=Math.pow(10,Math.floor(Math.
 function renderTrendLineChart(){
   const svg=document.getElementById('trend-line-chart'); if(!svg) return;
   const m=new Map();
-  allData.forEach(r=>{ const k=r.month.trim(); if(!k) return; if(!m.has(k)) m.set(k,{total:0,inbound:0,outbound:0}); const o=m.get(k); o.total+=r.totalCalls; o.inbound+=r.inbound; o.outbound+=r.outbound; });
+  applyShift(allData).forEach(r=>{ const k=r.month.trim(); if(!k) return; if(!m.has(k)) m.set(k,{total:0,inbound:0,outbound:0}); const o=m.get(k); o.total+=r.totalCalls; o.inbound+=r.inbound; o.outbound+=r.outbound; });
   const sorted=[...m.entries()].map(([k,v])=>{ const p=k.split(' '); return {label:k,shortLabel:(p[0]||'').slice(0,3)+' '+(p[1]||'').slice(2),monthIdx:MONTHS.indexOf(p[0]),yearNum:parseInt(p[1])||0,...v}; }).sort((a,b)=>(a.yearNum-b.yearNum)||(a.monthIdx-b.monthIdx));
   if(sorted.length<2){ svg.innerHTML='<text x="10" y="30" fill="#94a3b8" font-size="12">Not enough monthly data yet</text>'; svg.setAttribute('viewBox','0 0 500 60'); return; }
   const W=Math.max(500,sorted.length*80+80),H=200,padL=48,padR=16,padT=16,padB=36;
@@ -2258,11 +2290,11 @@ function renderTrendLineChart(){
 function renderInsights(){
   const grid=document.getElementById('insights-grid'); if(!grid) return;
   if(!allData.length){ grid.innerHTML='<div class="insight-chip"><div class="ic-icon">⏳</div><div class="ic-val">Waiting for data</div></div>'; return; }
-  const cur=aggregateByAgent(allData.filter(monthMatches));
+  const cur=aggregateByAgent(applyShift(allData.filter(monthMatches)));
   const chips=[];
   const idx=MONTHS.indexOf(currentMonth);
   const pM=MONTHS[(idx-1+12)%12], pY=idx===0?String(parseInt(currentYear)-1):currentYear;
-  const prev=aggregateByAgent(allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===pM&&p[1]===pY;}));
+  const prev=aggregateByAgent(applyShift(allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===pM&&p[1]===pY;})));
   const topCaller=[...cur].sort((a,b)=>b.totalCalls-a.totalCalls)[0];
   if(topCaller&&topCaller.totalCalls>0) chips.push({cls:'good',icon:'🏆',val:topCaller.name,label:`most calls this month (${topCaller.totalCalls.toLocaleString()})`});
   if(cur.length&&prev.length){
@@ -2279,7 +2311,7 @@ function renderInsights(){
   if(overTarget.length===0&&withCalls.length) chips.push({cls:'good',icon:'✅',val:'All agents',label:`met the ${fmtTime(AHT_TARGET_SEC)} AHT target this month`});
   else if(overTarget.length) chips.push({cls:'warn',icon:'⚠️',val:`${overTarget.length} agent${overTarget.length>1?'s':''}`,label:`over the ${fmtTime(AHT_TARGET_SEC)} AHT target this month`});
   const monthTotals=new Map();
-  allData.forEach(r=>{const k=r.month.trim();monthTotals.set(k,(monthTotals.get(k)||0)+r.totalCalls);});
+  applyShift(allData).forEach(r=>{const k=r.month.trim();monthTotals.set(k,(monthTotals.get(k)||0)+r.totalCalls);});
   let bestMonth='',bmv=0; monthTotals.forEach((v,k)=>{if(v>bmv){bmv=v;bestMonth=k;}});
   if(bestMonth) chips.push({cls:'highlight',icon:'🌟',val:`${bmv.toLocaleString()} calls`,label:`best team month ever (${bestMonth})`});
   if(!chips.length) chips.push({cls:'',icon:'📊',val:'More data needed',label:'insights appear as months accumulate'});
@@ -2294,7 +2326,7 @@ function renderAgentSection(){
   empty.style.display='none'; content.style.display='';
   set('agent-name-display',agentName);
 
-  const rows=allData.filter(d=>d.name===agentName).map(d=>{ const p=d.month.trim().split(' '); return {...d,monthName:p[0]||'',yearNum:parseInt(p[1])||0,monthIdx:MONTHS.indexOf(p[0])}; }).sort((a,b)=>(a.yearNum-b.yearNum)||(a.monthIdx-b.monthIdx));
+  const rows=applyShift(allData.filter(d=>d.name===agentName)).map(d=>{ const p=d.month.trim().split(' '); return {...d,monthName:p[0]||'',yearNum:parseInt(p[1])||0,monthIdx:MONTHS.indexOf(p[0])}; }).sort((a,b)=>(a.yearNum-b.yearNum)||(a.monthIdx-b.monthIdx));
   const cur=rows.find(r=>r.monthName===currentMonth&&r.yearNum===parseInt(currentYear));
   set('a-calls-label',`Total Calls — ${currentMonth} ${currentYear}`);
   set('a-aht-label',`Avg Handle Time — ${currentMonth} ${currentYear}`);
@@ -2303,7 +2335,7 @@ function renderAgentSection(){
   set('a-outbound',(cur?cur.outbound:0).toLocaleString());
   set('a-aht',cur?fmtTime(cur.aht):'0:00:00');
 
-  const monthAgg=aggregateByAgent(allData.filter(monthMatches));
+  const monthAgg=aggregateByAgent(applyShift(allData.filter(monthMatches)));
   const ranked=[...monthAgg].sort((a,b)=>b.totalCalls-a.totalCalls);
   const ri=ranked.findIndex(r=>r.name===agentName);
   if(ri>=0){ set('a-rank',`#${ri+1} of ${ranked.length}`); set('a-rank-sub',`${ranked[ri].totalCalls.toLocaleString()} calls this month`); }
@@ -2421,7 +2453,7 @@ function renderPerfTracker(agentName,rows,cur,monthAgg){
   set('pk-months',months+' month'+(months!==1?'s':''));
 
   // Score — self-scaling against the team's all-time bests
-  const allAgg=aggregateByAgent(allData);
+  const allAgg=aggregateByAgent(applyShift(allData));
   const maxCalls=Math.max(1,...allAgg.map(a=>a.totalCalls));
   const maxTalk=Math.max(1,...allAgg.map(a=>a.talkTime));
   const volScore=Math.min(40,totCalls/maxCalls*40);
@@ -2491,17 +2523,18 @@ function closeExportModal(){ document.getElementById('export-modal-overlay').sty
 function csvEscape(v){ const s=String(v==null?'':v); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
 function doExportCSV(){
   const mc=document.getElementById('export-month').value, ac=document.getElementById('export-agent').value;
-  let rows=allData.slice();
+  let rows=applyShift(allData.slice());
   if(mc!=='all') rows=rows.filter(r=>r.month.trim()===mc);
   if(ac!=='all') rows=rows.filter(r=>r.name===ac);
   rows=rows.map(r=>{ const p=r.month.trim().split(' '); return {...r,mn:p[0]||'',yr:parseInt(p[1])||0,idx:MONTHS.indexOf(p[0])}; }).sort((a,b)=>(a.yr-b.yr)||(a.idx-b.idx)||a.name.localeCompare(b.name));
-  const header=['Month','Agent','Inbound Calls','Inbound Time','Outbound Calls','Talk Time','Hold Time','AHT'];
+  const header=['Month','Agent','Shift','Inbound Calls','Inbound Time','Outbound Calls','Talk Time','Hold Time','AHT'];
   const lines=[header.map(csvEscape).join(',')];
-  rows.forEach(r=>lines.push([r.month,r.name,r.inbound,fmtTime(r.inboundTime),r.outbound,fmtTime(r.talkTime),fmtTime(r.holdTime),fmtTime(r.aht)].map(csvEscape).join(',')));
-  if(!rows.length) lines.push('No data found for the selected month/agent.');
+  rows.forEach(r=>lines.push([r.month,r.name,r.shift||'',r.inbound,fmtTime(r.inboundTime),r.outbound,fmtTime(r.talkTime),fmtTime(r.holdTime),fmtTime(r.aht)].map(csvEscape).join(',')));
+  if(!rows.length) lines.push('No data found for the selected filters.');
   const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url; a.download=`Banyan_Agent_Stats_${(mc==='all'?'AllMonths':mc.replace(' ','_'))}_${(ac==='all'?'AllAgents':ac.replace(/\s+/g,'_'))}.csv`;
+  const shiftPart=currentShift==='all'?'':'_'+currentShift;
+  a.href=url; a.download=`Banyan_Agent_Stats_${(mc==='all'?'AllMonths':mc.replace(' ','_'))}_${(ac==='all'?'AllAgents':ac.replace(/\s+/g,'_'))}${shiftPart}.csv`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); closeExportModal();
 }
 
