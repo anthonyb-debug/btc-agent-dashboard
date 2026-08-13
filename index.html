@@ -1,0 +1,2673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Banyan Treatment Center — Agent Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Prevent Flash Of Unstyled Theme -->
+<script>
+  (function(){
+    var t = localStorage.getItem('banyan-dashboard-theme');
+    if(!t){ t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+    if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+  })();
+</script>
+<style>
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* NOTE: theme transitions added below in GLOBAL THEME TRANSITIONS */
+
+:root {
+  --bg:        #F1F5F9;
+  --surface:   #FFFFFF;
+  --surface2:  #F8FAFC;
+  --border:    #E2E8F0;
+  --border2:   #CBD5E1;
+  --text-1:    #0F172A;
+  --text-2:    #334155;
+  --text-3:    #64748B;
+  --text-4:    #94A3B8;
+  --brand:     #0E8C8C;
+  --brand-lt:  #D6F0F0;
+  --brand-mid: #6FC5C5;
+  --accent:    #F5871F;
+  --accent-lt: #FDE6CD;
+  --emerald:   #059669;
+  --emerald-lt:#D1FAE5;
+  --amber:     #D97706;
+  --amber-lt:  #FEF3C7;
+  --rose:      #DC2626;
+  --rose-lt:   #FEE2E2;
+  --purple:    #7C3AED;
+  --purple-lt: #EDE9FE;
+  --cyan:      #0891B2;
+  --cyan-lt:   #CFFAFE;
+  --pink:      #DB2777;
+  --pink-lt:   #FCE7F3;
+  --teal:      #0D9488;
+  --teal-lt:   #CCFBF1;
+  --orange:    #EA580C;
+  --orange-lt: #FFEDD5;
+  --indigo:    #4F46E5;
+  --indigo-lt: #E0E7FF;
+  --shadow-sm: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  --shadow:    0 4px 12px rgba(15,23,42,0.08), 0 1px 4px rgba(15,23,42,0.04);
+  --shadow-lg: 0 10px 30px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.06);
+  --radius:    12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+}
+
+/* ── DARK THEME TOKENS ── */
+[data-theme="dark"] {
+  --bg:        #0F1117;
+  --surface:   #1A1D27;
+  --surface2:  #22263A;
+  --border:    #2D3150;
+  --border2:   #3A3F62;
+  --text-1:    #F1F5F9;
+  --text-2:    #CBD5E1;
+  --text-3:    #94A3B8;
+  --text-4:    #64748B;
+  --brand:     #19B5B5;
+  --brand-lt:  rgba(25,181,181,0.16);
+  --brand-mid: #0E8C8C;
+  --accent:    #FB9A3C;
+  --accent-lt: rgba(245,135,31,0.16);
+  --emerald:   #10B981;
+  --emerald-lt:rgba(16,185,129,0.15);
+  --amber:     #F59E0B;
+  --amber-lt:  rgba(245,158,11,0.15);
+  --rose:      #F87171;
+  --rose-lt:   rgba(248,113,113,0.15);
+  --purple:    #A78BFA;
+  --purple-lt: rgba(167,139,250,0.15);
+  --cyan:      #22D3EE;
+  --cyan-lt:   rgba(34,211,238,0.15);
+  --pink:      #F472B6;
+  --pink-lt:   rgba(244,114,182,0.15);
+  --teal:      #2DD4BF;
+  --teal-lt:   rgba(45,212,191,0.15);
+  --orange:    #FB923C;
+  --orange-lt: rgba(251,146,60,0.15);
+  --indigo:    #818CF8;
+  --indigo-lt: rgba(129,140,248,0.15);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow:    0 4px 12px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* ── GLOBAL THEME TRANSITIONS ── */
+*, *::before, *::after {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* ── THEME TOGGLE BUTTON ── */
+.theme-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.16);
+  color: #fff;
+  border-color: rgba(255,255,255,0.25);
+}
+
+.theme-toggle-track {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: var(--border2);
+  border-radius: 20px;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .theme-toggle-track {
+  background: var(--brand);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .theme-toggle-thumb {
+  transform: translateX(14px);
+}
+
+.theme-toggle-icon {
+  font-size: 13px;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+/* Dark-mode specific overrides for elements with hardcoded colors */
+[data-theme="dark"] .grand-total-row td {
+  background: linear-gradient(90deg, rgba(30,58,95,0.5), rgba(30,64,175,0.3));
+}
+
+[data-theme="dark"] .insight-chip.highlight {
+  border-color: var(--brand-mid);
+  background: var(--brand-lt);
+}
+
+[data-theme="dark"] .insight-chip.warn {
+  border-color: var(--rose);
+  background: var(--rose-lt);
+}
+
+[data-theme="dark"] .insight-chip.good {
+  border-color: var(--emerald);
+  background: var(--emerald-lt);
+}
+
+[data-theme="dark"] .admit-badge {
+  background: var(--emerald-lt);
+  color: var(--emerald);
+}
+
+[data-theme="dark"] .perf-kpi.kpi-good {
+  border-color: var(--emerald);
+  background: var(--emerald-lt);
+}
+
+[data-theme="dark"] .perf-kpi.kpi-warn {
+  border-color: var(--amber);
+  background: var(--amber-lt);
+}
+
+[data-theme="dark"] .perf-kpi.kpi-bad {
+  border-color: var(--rose);
+  background: var(--rose-lt);
+}
+
+[data-theme="dark"] .grade-s { background: var(--emerald-lt); color: var(--emerald); }
+[data-theme="dark"] .grade-a { background: var(--brand-lt); color: var(--brand); }
+[data-theme="dark"] .grade-b { background: var(--amber-lt); color: var(--amber); }
+[data-theme="dark"] .grade-c { background: var(--rose-lt); color: var(--rose); }
+
+[data-theme="dark"] .badge-gold   { background: var(--amber-lt);   color: var(--amber);   border-color: rgba(245,158,11,0.3); }
+[data-theme="dark"] .badge-blue   { background: var(--brand-lt);   color: var(--brand);   border-color: rgba(59,130,246,0.3); }
+[data-theme="dark"] .badge-green  { background: var(--emerald-lt); color: var(--emerald); border-color: rgba(16,185,129,0.3); }
+[data-theme="dark"] .badge-purple { background: var(--purple-lt);  color: var(--purple);  border-color: rgba(167,139,250,0.3); }
+[data-theme="dark"] .badge-red    { background: var(--rose-lt);    color: var(--rose);    border-color: rgba(248,113,113,0.3); }
+
+[data-theme="dark"] select.filter-select {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] select.filter-select option {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LAYOUT ── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  background: linear-gradient(135deg, #3E6B1F 0%, #5C9331 45%, #7DBC44 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 68px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(15,23,42,0.35), 0 1px 4px rgba(15,23,42,0.2);
+}
+
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), rgba(190,224,150,0.45), rgba(255,255,255,0.12), transparent);
+}
+
+[data-theme="dark"] .topbar {
+  background: linear-gradient(135deg, #24401A 0%, #3E6B25 40%, #5C9A34 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  height: 60px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+  filter: none;
+  opacity: 1;
+}
+
+.brand-divider {
+  width: 1px;
+  height: 60px;
+  background: rgba(255,255,255,0.2);
+}
+
+.brand-text .eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(224,242,196,0.95);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.brand-text h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.topbar-nav {
+  display: flex;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+  backdrop-filter: blur(8px);
+}
+
+.nav-pill {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.nav-pill:hover { color: #fff; background: rgba(255,255,255,0.12); }
+.nav-pill.active { background: rgba(255,255,255,0.18); color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.info-chip {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  backdrop-filter: blur(8px);
+}
+
+.info-chip label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.info-chip .info-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  line-height: 1;
+}
+
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+
+.btn-refresh:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.3); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn-refresh:active { transform: scale(0.97); }
+
+/* ── EXPORT CSV MODAL ── */
+.export-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.export-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 380px;
+  overflow: hidden;
+}
+
+.export-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.export-modal-header h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.export-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+.export-modal-close:hover { background: var(--surface2); color: var(--text-1); }
+
+.export-modal-body {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.export-field { display: flex; flex-direction: column; gap: 6px; }
+
+.export-field label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.export-select {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.export-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.export-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.export-btn:hover { border-color: var(--border2); color: var(--text-1); }
+
+.export-btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.export-btn-primary:hover { background: var(--brand); opacity: 0.9; color: #fff; }
+
+/* ── FILTERS BAR ── */
+.filters-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  height: 34px;
+  overflow: hidden;
+  gap: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filter-chip:hover {
+  border-color: var(--border2);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-chip-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  padding: 0 10px;
+  border-right: 1px solid var(--border);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  white-space: nowrap;
+  border-radius: 20px 0 0 20px;
+}
+
+.filter-chip-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.filter-nav {
+  width: 30px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-4);
+  font-size: 16px;
+  border-left: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.filter-nav:last-child { border-radius: 0 20px 20px 0; }
+.filter-nav:hover { background: var(--border); color: var(--text-1); }
+
+.view-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.btn-toggle {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-toggle:hover { color: var(--text-1); }
+.btn-toggle.active { background: var(--surface); color: var(--brand); box-shadow: var(--shadow-sm); }
+
+select.filter-select {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  padding: 0 10px;
+  height: 100%;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+  font-family: inherit;
+}
+
+.filters-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+
+/* ── MAIN CONTENT ── */
+.main-content {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── ERROR ── */
+.error-msg {
+  background: var(--rose-lt);
+  border: 1px solid #FECACA;
+  border-left: 4px solid var(--rose);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  color: var(--rose);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── CARDS (base) ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-body {
+  padding: 16px 20px;
+}
+
+/* ── STAT CARDS ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  border-radius: 12px 0 0 12px;
+  background: var(--brand);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  border-color: var(--brand-mid);
+}
+
+.stat-card:hover::before { opacity: 1; }
+
+.stat-info { flex: 1; }
+
+.stat-info label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  display: block;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-1);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.stat-trend {
+  font-size: 11px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 500;
+}
+
+.trend-up   { color: var(--emerald); }
+.trend-down { color: var(--rose); }
+.trend-flat { color: var(--text-4); }
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 12px;
+  margin-top: 2px;
+}
+
+.icon-blue    { background: var(--brand-lt); }
+.icon-purple  { background: var(--purple-lt); }
+.icon-cyan    { background: var(--cyan-lt); }
+.icon-pink    { background: var(--pink-lt); }
+.icon-teal    { background: var(--teal-lt); }
+.icon-orange  { background: var(--orange-lt); }
+.icon-indigo  { background: var(--indigo-lt); }
+.icon-amber   { background: var(--amber-lt); }
+.icon-emerald { background: var(--emerald-lt); }
+.icon-rose    { background: var(--rose-lt); }
+
+/* ── HIGHLIGHT CARDS (top 3) ── */
+.highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.highlight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.highlight-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand), var(--purple), var(--emerald));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.highlight-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  border-color: var(--brand-mid);
+}
+
+.highlight-card:hover::after { opacity: 1; }
+
+.hc-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hc-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-sub {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* ── GOAL CARD ── */
+.goal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.goal-card:hover { box-shadow: var(--shadow); }
+
+.goal-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 4px;
+}
+
+.goal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+
+.goal-bar-wrap { flex: 1; min-width: 200px; }
+
+.goal-bar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.goal-bar-label-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.goal-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.goal-track {
+  background: var(--border);
+  border-radius: 20px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.goal-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: linear-gradient(90deg, var(--brand), #60A5FA);
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+.goal-subtext {
+  font-size: 11px;
+  color: var(--text-4);
+  margin-top: 5px;
+}
+
+.goal-stats { display: flex; gap: 20px; flex-shrink: 0; }
+
+.goal-stat { text-align: center; }
+
+.goal-stat .gval {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-1);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.goal-stat .glabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-top: 3px;
+}
+
+/* ── CHARTS ROW ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.donut-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.donut-svg { flex-shrink: 0; width: 210px; height: 210px; }
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 210px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-2);
+  padding: 2px 0;
+}
+
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.legend-val  { font-weight: 700; color: var(--text-1); font-size: 12px; }
+
+/* ── DONUT CHART ── */
+.donut-center-val { fill: var(--text-1); }
+
+.donut-seg {
+  stroke: var(--surface);
+  stroke-width: 1.5;
+  transform-origin: 90px 90px;
+}
+
+.donut-seg-anim {
+  animation: donutSegIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.donut-center-anim {
+  animation: donutFadeIn 0.5s ease-out 0.25s backwards;
+}
+
+.donut-legend-item {
+  animation: donutLegendIn 0.4s ease-out backwards;
+}
+
+@keyframes donutSegIn {
+  from { opacity: 0; transform: scale(0.8) rotate(-6deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes donutFadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes donutLegendIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── LEGEND SCROLLBAR ── */
+.legend::-webkit-scrollbar { width: 4px; }
+.legend::-webkit-scrollbar-track { background: var(--surface2); border-radius: 4px; }
+.legend::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+.legend::-webkit-scrollbar-thumb:hover { background: var(--text-4); }
+.legend { scrollbar-width: thin; scrollbar-color: var(--border2) var(--surface2); }
+
+/* ── LEADERBOARD / TABLE ── */
+.leaderboard-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lb-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.lb-sort {
+  font-size: 11px;
+  color: var(--text-4);
+  font-weight: 500;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+thead tr { border-bottom: 1px solid var(--border); background: var(--surface2); }
+
+th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-4);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+th:hover, th.sorted { color: var(--brand); }
+
+td {
+  padding: 10px 12px;
+  color: var(--text-2);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+
+.rank-num { font-weight: 700; color: var(--text-4); }
+.rank-1 { color: #F59E0B; font-size: 13px; }
+.rank-2 { color: #94A3B8; }
+.rank-3 { color: #B45309; }
+
+.agent-name {
+  font-weight: 600;
+  color: var(--text-1);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 5px;
+  transition: color 0.15s, background 0.15s;
+  display: inline-block;
+}
+
+.agent-name:hover { color: var(--brand); background: var(--brand-lt); }
+
+.lb-name-wrap { display: inline-flex; align-items: center; gap: 0; }
+.lb-name-wrap:hover .agent-name { color: var(--brand); background: var(--brand-lt); }
+.lb-name-wrap:hover .lb-spark { opacity: 1; }
+
+.lb-spark {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 14px;
+  vertical-align: middle;
+  margin-left: 5px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.lb-spark-bar { width: 4px; background: var(--brand); border-radius: 1px; }
+
+.vob-pct { font-weight: 600; }
+.vob-high { color: var(--emerald); }
+.vob-mid  { color: var(--amber); }
+.vob-low  { color: var(--rose); }
+
+.admit-badge {
+  background: var(--emerald-lt);
+  color: #065F46;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  transition: all 0.15s;
+  display: inline-block;
+}
+
+.grand-total-row td {
+  background: linear-gradient(90deg, #F0F9FF, #EFF6FF);
+  border-top: 2px solid var(--brand);
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.grand-total-label { color: var(--brand); font-weight: 800; }
+.grand-total-admits {
+  background: var(--brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* ── TOOLTIP ── */
+.lb-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: #1E2333;
+  color: #E2E8F0;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.18s, transform 0.18s;
+  min-width: 210px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.lb-tooltip.visible { opacity: 1; transform: translateY(0); }
+.lb-tooltip-name { font-size: 13px; font-weight: 700; color: #60A5FA; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
+.lb-tooltip-row { display: flex; justify-content: space-between; gap: 20px; }
+.lb-tooltip-label { color: #94A3B8; }
+.lb-tooltip-val { font-weight: 600; color: #fff; }
+
+/* ── TREND CHART CARD ── */
+.trend-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.trend-chart-card:hover { box-shadow: var(--shadow); }
+
+.trend-svg-wrap { overflow-x: auto; padding: 4px 0; }
+
+.chart-legend-row {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+/* ── INSIGHTS ── */
+.insights-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.insights-card:hover { box-shadow: var(--shadow); }
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.insight-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  transition: all 0.15s;
+}
+
+.insight-chip:hover { border-color: var(--brand-mid); background: var(--brand-lt); }
+.insight-chip .ic-icon { font-size: 18px; margin-bottom: 5px; }
+.insight-chip .ic-val { font-size: 15px; font-weight: 700; color: var(--text-1); line-height: 1.3; }
+.insight-chip .ic-label { font-size: 11px; color: var(--text-3); margin-top: 2px; font-weight: 500; }
+.insight-chip.highlight { border-color: #93C5FD; background: #EFF6FF; }
+.insight-chip.warn { border-color: #FCA5A5; background: #FFF5F5; }
+.insight-chip.good { border-color: #6EE7B7; background: #F0FDF4; }
+
+/* ── LOADING / SPINNER ── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  color: var(--text-4);
+  font-size: 13px;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── AGENT SECTION ── */
+.agent-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-4);
+  font-size: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  font-weight: 500;
+}
+
+/* ── PERF TRACKER ── */
+.perf-tracker-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.section-header {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin: 20px 0 10px;
+}
+
+.perf-score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.perf-score-ring { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+.perf-score-ring svg { transform: rotate(-90deg); }
+.perf-score-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.perf-score-num { font-size: 28px; font-weight: 800; color: var(--text-1); line-height: 1; }
+.perf-score-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-4); }
+
+/* ── DARK MODE DEPTH ── */
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .highlight-card,
+[data-theme="dark"] .card,
+[data-theme="dark"] .leaderboard-card,
+[data-theme="dark"] .perf-tracker-card,
+[data-theme="dark"] .goal-card,
+[data-theme="dark"] .trend-chart-card,
+[data-theme="dark"] .insights-card {
+  border-color: var(--border2);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .stat-card:hover,
+[data-theme="dark"] .highlight-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3);
+  border-color: color-mix(in srgb, var(--card-accent, var(--brand)) 60%, var(--border2));
+}
+
+.perf-score-detail { flex: 1; }
+.perf-score-title { font-size: 15px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+.perf-score-sub { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+
+.perf-score-grade {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.grade-s { background: var(--emerald-lt); color: #065F46; }
+.grade-a { background: var(--brand-lt); color: #1D4ED8; }
+.grade-b { background: var(--amber-lt); color: #92400E; }
+.grade-c { background: var(--rose-lt); color: #991B1B; }
+
+.perf-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+.perf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+.badge-gold   { background: var(--amber-lt);   color: #92400E; border-color: #FDE68A; }
+.badge-blue   { background: var(--brand-lt);   color: #1E40AF; border-color: #BFDBFE; }
+.badge-green  { background: var(--emerald-lt); color: #065F46; border-color: #A7F3D0; }
+.badge-purple { background: var(--purple-lt);  color: #5B21B6; border-color: #DDD6FE; }
+.badge-red    { background: var(--rose-lt);    color: #991B1B; border-color: #FECACA; }
+.badge-gray   { background: var(--surface2);   color: var(--text-3); border-color: var(--border); }
+
+.perf-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.perf-kpi {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: default;
+}
+
+.perf-kpi:hover { border-color: var(--brand-mid); background: var(--brand-lt); }
+.perf-kpi-icon { font-size: 18px; margin-bottom: 4px; }
+.perf-kpi-val { font-size: 20px; font-weight: 800; color: var(--text-1); line-height: 1.1; }
+.perf-kpi-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-4); margin-top: 3px; }
+.perf-kpi.kpi-good { border-color: #6EE7B7; background: #F0FDF4; }
+.perf-kpi.kpi-good .perf-kpi-val { color: var(--emerald); }
+.perf-kpi.kpi-warn { border-color: #FCD34D; background: #FFFBEB; }
+.perf-kpi.kpi-warn .perf-kpi-val { color: var(--amber); }
+.perf-kpi.kpi-bad { border-color: #FCA5A5; background: #FFF5F5; }
+.perf-kpi.kpi-bad .perf-kpi-val { color: var(--rose); }
+
+.perf-goals { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.perf-goal-item { display: flex; flex-direction: column; gap: 5px; }
+.perf-goal-top { display: flex; justify-content: space-between; align-items: baseline; }
+.perf-goal-name { font-size: 12px; font-weight: 600; color: var(--text-2); }
+.perf-goal-nums { font-size: 11px; color: var(--text-4); font-weight: 500; }
+.perf-goal-track { background: var(--border); border-radius: 20px; height: 8px; overflow: hidden; }
+.perf-goal-fill { height: 100%; border-radius: 20px; transition: width 0.6s ease; }
+.fill-green  { background: linear-gradient(90deg, var(--emerald), #34D399); }
+.fill-blue   { background: linear-gradient(90deg, var(--brand), #60A5FA); }
+.fill-purple { background: linear-gradient(90deg, var(--purple), #A78BFA); }
+.fill-orange { background: linear-gradient(90deg, var(--orange), #FB923C); }
+
+.perf-vs-team {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.vs-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 14px; border: 1px solid var(--border); }
+.vs-item-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-4); margin-bottom: 5px; }
+.vs-item-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.vs-item-bar-track { flex: 1; background: var(--border); border-radius: 20px; height: 6px; overflow: hidden; }
+.vs-item-bar-fill { height: 100%; border-radius: 20px; background: var(--brand); transition: width 0.6s ease; }
+.vs-item-vals { font-size: 11px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+.vs-you { color: var(--brand); font-weight: 700; }
+.vs-avg { color: var(--text-4); }
+
+/* ── SECTION DIVIDERS & SPACING ── */
+.section-gap  { margin-bottom: 28px; }
+.section-block { margin-bottom: 32px; }
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1200px) {
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .highlight-grid { grid-template-columns: 1fr; }
+  .topbar { flex-wrap: wrap; height: auto; padding: 12px 16px; }
+  .topbar-right { flex-wrap: wrap; }
+  .main-content { padding: 14px; }
+}
+
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .goal-card { flex-direction: column; }
+  .filters-bar { padding: 10px 14px; }
+  .topbar { padding: 10px 14px; }
+  .topbar-nav { order: 3; width: 100%; justify-content: center; }
+  .topbar-right { order: 2; }
+  .topbar-brand { order: 1; }
+  .nav-pill { flex: 1; text-align: center; }
+  .info-chip { display: none; }
+  .theme-toggle span.theme-toggle-icon + div { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  .theme-toggle-track, .theme-toggle-thumb { transition: none !important; }
+}
+
+/* ── FOCUS VISIBLE (WCAG) ── */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+/* ── SCORE INFO TOOLTIP ── */
+.score-tip-visible { display:block !important; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg class="brand-logo" viewBox="0 0 48 60" xmlns="http://www.w3.org/2000/svg" aria-label="Banyan Treatment Center" role="img">
+        <g fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M24 54 V30" />
+          <path d="M24 34 C24 26 15 24 15 16" />
+          <path d="M24 34 C24 26 33 24 33 16" />
+          <path d="M18 44 C18 40 12 39 12 33" />
+          <path d="M30 44 C30 40 36 39 36 33" />
+          <path d="M15 54 V44" opacity="0.85"/>
+          <path d="M33 54 V44" opacity="0.85"/>
+        </g>
+        <g fill="#F5871F">
+          <circle cx="24" cy="12" r="6.5"/>
+          <circle cx="12" cy="16" r="4.6"/>
+          <circle cx="36" cy="16" r="4.6"/>
+          <circle cx="10" cy="30" r="4"/>
+          <circle cx="38" cy="30" r="4"/>
+        </g>
+      </svg>
+      <div class="brand-divider"></div>
+      <div class="brand-text">
+        <div class="eyebrow">Agent Dashboard</div>
+        <h1>Banyan Treatment Center</h1>
+      </div>
+    </div>
+
+    <nav class="topbar-nav" aria-label="Main sections">
+      <button class="nav-pill active" id="btn-section-team" onclick="setSection('team')">Team Stats</button>
+      <button class="nav-pill" id="btn-section-agent" onclick="setSection('agent')">Agent Stats</button>
+      <button class="nav-pill" id="btn-section-watchlist" onclick="setSection('watchlist')">⚡ Efficiency Watch</button>
+    </nav>
+
+    <div class="topbar-right">
+      <div class="info-chip"><label>Latest Update</label><div class="info-val" id="info-latest">–</div></div>
+      <div class="info-chip"><label>Active Scope</label><div class="info-val" id="info-scope">–</div></div>
+      <div class="info-chip"><label>Last Synced</label><div class="info-val" id="info-synced">–</div></div>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle light/dark theme">
+        <span class="theme-toggle-icon" id="theme-icon">☀️</span>
+        <div class="theme-toggle-track"><div class="theme-toggle-thumb"></div></div>
+      </button>
+      <button class="btn-refresh" onclick="loadData()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+      <button class="btn-refresh" onclick="openExportModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+  </header>
+
+  <!-- EXPORT CSV MODAL -->
+  <div id="export-modal-overlay" class="export-modal-overlay" style="display:none;" onclick="if(event.target===this) closeExportModal()">
+    <div class="export-modal">
+      <div class="export-modal-header">
+        <h3>Export CSV</h3>
+        <button class="export-modal-close" onclick="closeExportModal()" aria-label="Close">✕</button>
+      </div>
+      <div class="export-modal-body">
+        <div class="export-field">
+          <label for="export-month">Month</label>
+          <select id="export-month" class="filter-select export-select"><option value="all">All months</option></select>
+        </div>
+        <div class="export-field">
+          <label for="export-agent">Agent</label>
+          <select id="export-agent" class="filter-select export-select"><option value="all">All agents</option></select>
+        </div>
+      </div>
+      <div class="export-modal-footer">
+        <button class="export-btn" onclick="closeExportModal()">Cancel</button>
+        <button class="export-btn export-btn-primary" onclick="doExportCSV()">Export</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-bar" role="toolbar" aria-label="Filters">
+    <div class="view-toggle">
+      <button class="btn-toggle active" id="btn-monthly" onclick="setView('monthly')">Monthly</button>
+      <button class="btn-toggle" id="btn-alltime" onclick="setView('alltime')">All Time</button>
+    </div>
+    <div class="filters-separator"></div>
+    <div class="filter-chip">
+      <div class="filter-chip-label">Year</div>
+      <div class="filter-chip-val" id="filter-year">2026</div>
+    </div>
+    <div class="filter-chip">
+      <div class="filter-chip-label">Month</div>
+      <button class="filter-nav" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
+      <div class="filter-chip-val" id="filter-month">—</div>
+      <button class="filter-nav" onclick="changeMonth(1)" aria-label="Next month">›</button>
+    </div>
+    <div class="filter-chip" id="agent-filter-group" style="display:none;">
+      <div class="filter-chip-label">Agent</div>
+      <select class="filter-select" id="filter-agent" onchange="renderAll()" aria-label="Select agent"><option value="all">All agents</option></select>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div id="error-area"></div>
+
+    <!-- ═══ TEAM SECTION ═══ -->
+    <div id="section-team">
+
+      <!-- Stat cards -->
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card"><div class="stat-info"><label>Total Inbound Calls</label><div class="stat-num" id="s-inbound">—</div><div class="stat-trend" id="t-inbound"></div></div><div class="stat-icon icon-blue"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.82a16 16 0 0 0 6.29 6.29l1.46-1.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/><polyline points="16 2 20 6 16 10" stroke="#2563eb"/><line x1="20" y1="6" x2="12" y2="6" stroke="#2563eb"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Total Outbound Calls</label><div class="stat-num" id="s-outbound">—</div><div class="stat-trend" id="t-outbound"></div></div><div class="stat-icon icon-teal"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.82a16 16 0 0 0 6.29 6.29l1.46-1.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/><polyline points="20 6 16 10 12 6" stroke="#0d9488"/><line x1="12" y1="6" x2="20" y2="6" stroke="#0d9488"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Total Calls Handled</label><div class="stat-num" id="s-total">—</div><div class="stat-trend" id="t-total"></div></div><div class="stat-icon icon-indigo"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.82a16 16 0 0 0 6.29 6.29l1.46-1.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Avg Talk Time / Agent</label><div class="stat-num" id="s-talk">—</div><div class="stat-trend" id="t-talk"></div></div><div class="stat-icon icon-purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Avg Hold Time / Agent</label><div class="stat-num" id="s-hold">—</div><div class="stat-trend" id="t-hold"></div></div><div class="stat-icon icon-amber"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Team Avg Handle Time</label><div class="stat-num" id="s-aht">—</div><div class="stat-trend" id="t-aht"></div></div><div class="stat-icon icon-orange"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 15"/></svg></div></div>
+      </div>
+
+      <!-- Top performers -->
+      <div class="highlight-grid">
+        <div class="highlight-card"><div class="hc-eyebrow">📞 Most Inbound Calls</div><div class="hc-name" id="top-inbound-name">—</div><div class="hc-sub" id="top-inbound-sub">—</div></div>
+        <div class="highlight-card"><div class="hc-eyebrow">📤 Most Outbound Calls</div><div class="hc-name" id="top-outbound-name">—</div><div class="hc-sub" id="top-outbound-sub">—</div></div>
+        <div class="highlight-card"><div class="hc-eyebrow">⚡ Best Avg Handle Time</div><div class="hc-name" id="top-aht-name">—</div><div class="hc-sub" id="top-aht-sub">—</div></div>
+      </div>
+
+      <!-- Goal Tracker -->
+      <div class="goal-card" id="goal-card">
+        <div style="flex-shrink:0;">
+          <div class="goal-label">Monthly Target</div>
+          <div class="goal-title">🎯 Team Calls Goal</div>
+        </div>
+        <div class="goal-bar-wrap">
+          <div class="goal-bar-top">
+            <span class="goal-bar-label-text" id="goal-bar-label">0 / 0 calls</span>
+            <span class="goal-pct" id="goal-pct-label">0%</span>
+          </div>
+          <div class="goal-track"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
+          <div class="goal-subtext" id="goal-subtext">—</div>
+        </div>
+        <div class="goal-stats">
+          <div class="goal-stat"><div class="gval" id="goal-current">—</div><div class="glabel">This Month</div></div>
+          <div class="goal-stat"><div class="gval" id="goal-remaining">—</div><div class="glabel">Remaining</div></div>
+          <div class="goal-stat"><div class="gval" id="goal-target">—</div><div class="glabel">Target</div></div>
+        </div>
+      </div>
+
+      <!-- Donut Charts -->
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-header"><div class="card-title" id="inbound-chart-title">Inbound Calls by Agent</div></div>
+          <div class="card-body"><div class="donut-wrap"><svg class="donut-svg" id="donut-inbound" viewBox="0 0 180 180"></svg><div class="legend" id="legend-inbound"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title" id="talk-chart-title">Talk Time by Agent</div></div>
+          <div class="card-body"><div class="donut-wrap"><svg class="donut-svg" id="donut-talk" viewBox="0 0 180 180"></svg><div class="legend" id="legend-talk"></div></div></div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="leaderboard-card">
+        <div class="lb-header">
+          <div class="lb-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5871F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 2 6 2 12"/><path d="M2 12a10 10 0 0 0 20 0"/><polyline points="16 6 22 6 22 12"/><line x1="12" y1="22" x2="12" y2="17"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            Leaderboard — <span id="lb-period">—</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="position:relative;display:flex;align-items:center;">
+              <svg style="position:absolute;left:8px;pointer-events:none;" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="lb-search" type="text" placeholder="Search agent…" oninput="renderAll()"
+                style="padding:5px 10px 5px 28px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;font-weight:500;color:var(--text-1);background:var(--surface2);outline:none;width:150px;transition:border-color 0.15s,box-shadow 0.15s;"
+                onfocus="this.style.borderColor='var(--brand)';this.style.boxShadow='0 0 0 3px var(--brand-lt)'"
+                onblur="this.style.borderColor='var(--border)';this.style.boxShadow=''"/>
+            </div>
+            <div class="lb-sort" id="lb-sort-label">Ranked by Total Calls ↓ · Click column to re-rank</div>
+          </div>
+        </div>
+        <div id="table-wrap"><div class="loading"><div class="spinner"></div> Loading data from Google Sheets…</div></div>
+      </div>
+
+      <!-- Trend Line Chart -->
+      <div class="trend-chart-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0E8C8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Team Call Volume Over Time
+          </div>
+        </div>
+        <div class="card-body" style="padding-bottom:0;"><div class="trend-svg-wrap"><svg id="trend-line-chart" style="display:block;"></svg></div></div>
+        <div class="chart-legend-row">
+          <div class="legend-item"><div class="legend-dot" style="background:#4f46e5"></div><span>Total Calls</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span>Inbound</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#F5871F"></div><span>Outbound</span></div>
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="insights-card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Team Insights &amp; Consistency
+          </div>
+        </div>
+        <div class="insights-grid" id="insights-grid">
+          <div class="insight-chip"><div class="ic-icon">⏳</div><div class="ic-val">Loading…</div><div class="ic-label">Calculating insights</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ EFFICIENCY WATCHLIST SECTION ═══ -->
+    <div id="section-watchlist" style="display:none">
+      <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+        <div class="stat-card"><div class="stat-info"><label>AHT Target</label><div class="stat-num" id="wl-target">—</div><div class="stat-trend">At or below is healthy</div></div><div class="stat-icon icon-blue"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Over Target — Monthly</label><div class="stat-num" id="wl-month-flagged-count">—</div><div class="stat-trend" id="wl-month-flagged-sub"></div></div><div class="stat-icon icon-orange"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 17h.01"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Over Target — Quarterly</label><div class="stat-num" id="wl-quarter-flagged-count">—</div><div class="stat-trend" id="wl-quarter-flagged-sub"></div></div><div class="stat-icon icon-purple"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 17h.01"/></svg></div></div>
+        <div class="stat-card"><div class="stat-info"><label>Needs Coaching</label><div class="stat-num" id="wl-flagged-count">—</div><div class="stat-trend" id="wl-flagged-sub"></div></div><div class="stat-icon icon-rose"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-3);margin:-6px 0 16px;line-height:1.5;">
+        "Needs Coaching" = an agent whose <strong>Average Handle Time is above the target</strong> for <strong>both</strong> the month <strong>and</strong> the quarter selected below. Lower AHT is better — the heatmap shades green under target and red over.
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.4px;">View</span>
+        <div class="view-toggle">
+          <button class="btn-toggle active" id="btn-wl-monthly" onclick="setWlView('monthly')">📅 Monthly</button>
+          <button class="btn-toggle" id="btn-wl-quarterly" onclick="setWlView('quarterly')">🗓️ Quarterly</button>
+        </div>
+      </div>
+
+      <div class="leaderboard-card" id="wl-card-monthly" style="margin-bottom:20px;">
+        <div class="lb-header">
+          <div class="lb-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0E8C8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Monthly Avg Handle Time — <span id="wl-month-period">—</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div class="filter-chip" style="margin:0;"><div class="filter-chip-label">Month</div><select class="filter-select" id="wl-month-select" onchange="renderWatchlist()" aria-label="Select month"></select></div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-3);cursor:pointer;"><input type="checkbox" id="wl-month-show-all" checked onchange="renderWatchlist()" style="cursor:pointer;"> Show all agents</label>
+          </div>
+        </div>
+        <div id="watchlist-monthly-wrap"><div class="loading"><div class="spinner"></div> Loading data…</div></div>
+        <div id="wl-month-legend" style="display:none;padding:10px 20px;font-size:11px;color:var(--text-3);border-top:1px solid var(--border);align-items:center;gap:8px;">
+          Heatmap: <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.7);"></span> well under target
+          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.15);margin-left:6px;"></span> just under
+          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.15);margin-left:10px;"></span> just over
+          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.7);margin-left:6px;"></span> well over target
+        </div>
+      </div>
+
+      <div class="leaderboard-card" id="wl-card-quarterly" style="display:none;">
+        <div class="lb-header">
+          <div class="lb-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Quarterly Avg Handle Time — <span id="wl-quarter-period">—</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div class="filter-chip" style="margin:0;"><div class="filter-chip-label">Quarter</div><select class="filter-select" id="wl-quarter-select" onchange="renderWatchlist()" aria-label="Select quarter"></select></div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-3);cursor:pointer;"><input type="checkbox" id="wl-quarter-show-all" checked onchange="renderWatchlist()" style="cursor:pointer;"> Show all agents</label>
+          </div>
+        </div>
+        <div id="watchlist-quarterly-wrap"><div class="loading"><div class="spinner"></div> Loading data…</div></div>
+        <div id="wl-quarter-legend" style="display:none;padding:10px 20px;font-size:11px;color:var(--text-3);border-top:1px solid var(--border);align-items:center;gap:8px;">
+          Heatmap: <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.7);"></span> well under target
+          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(5,150,105,0.15);margin-left:6px;"></span> just under
+          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.15);margin-left:10px;"></span> just over
+          <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:rgba(220,38,38,0.7);margin-left:6px;"></span> well over target
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AGENT SECTION ═══ -->
+    <div id="section-agent" style="display:none">
+      <!-- DEFAULT (no agent selected) -->
+      <div id="agent-empty" style="display:none">
+        <div style="background:linear-gradient(135deg,#062A2E 0%,#0E8C8C 60%,#F5871F 130%);border-radius:var(--radius-lg);padding:28px 32px;margin-bottom:20px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;box-shadow:var(--shadow-lg);">
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:0.75;margin-bottom:6px;">Agent Stats — Overview</div>
+            <div style="font-size:22px;font-weight:800;line-height:1.2;margin-bottom:6px;">Select an agent to deep-dive 👆</div>
+            <div style="font-size:13px;opacity:0.85;">Use the <strong>Agent</strong> filter above to view an individual's performance score, badges, goal progress, and month-by-month history.</div>
+          </div>
+          <div style="display:flex;gap:16px;flex-shrink:0;flex-wrap:wrap;">
+            <div style="text-align:center;background:rgba(255,255,255,0.14);border-radius:var(--radius);padding:14px 20px;"><div style="font-size:26px;font-weight:800;line-height:1;" id="ov-agent-count">—</div><div style="font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;opacity:0.8;margin-top:4px;">Active Agents</div></div>
+            <div style="text-align:center;background:rgba(255,255,255,0.14);border-radius:var(--radius);padding:14px 20px;"><div style="font-size:26px;font-weight:800;line-height:1;" id="ov-top-calls">—</div><div style="font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;opacity:0.8;margin-top:4px;">Top Calls</div></div>
+            <div style="text-align:center;background:rgba(255,255,255,0.14);border-radius:var(--radius);padding:14px 20px;"><div style="font-size:26px;font-weight:800;line-height:1;" id="ov-avg-aht">—</div><div style="font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;opacity:0.8;margin-top:4px;">Team Avg AHT</div></div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);margin-bottom:20px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-1);display:flex;align-items:center;gap:8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0E8C8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Agent Roster — <span id="ov-period-label">—</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-4);font-weight:500;">Click a card to jump to that agent ↗</div>
+          </div>
+          <div id="ov-agent-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:16px 20px;"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;"><div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text-1);">📞 Total Calls Distribution</div><div id="ov-calls-dist" style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;"></div></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;"><div style="padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text-1);">🗣️ Talk Time Distribution</div><div id="ov-talk-dist" style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;"></div></div>
+        </div>
+      </div>
+
+      <div id="agent-content">
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="stat-card"><div class="stat-info"><label id="a-calls-label">Total Calls</label><div class="stat-num" id="a-calls">0</div></div><div class="stat-icon icon-indigo"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.82a16 16 0 0 0 6.29 6.29l1.46-1.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg></div></div>
+          <div class="stat-card"><div class="stat-info"><label>Inbound Calls</label><div class="stat-num" id="a-inbound">0</div></div><div class="stat-icon icon-blue"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 2 20 6 16 10"/><line x1="20" y1="6" x2="9" y2="6"/><path d="M4 12v6a2 2 0 0 0 2 2h12"/></svg></div></div>
+          <div class="stat-card"><div class="stat-info"><label>Outbound Calls</label><div class="stat-num" id="a-outbound">0</div></div><div class="stat-icon icon-teal"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 16 10 12 6"/><line x1="16" y1="10" x2="16" y2="20"/><path d="M20 12v6a2 2 0 0 1-2 2H6"/></svg></div></div>
+          <div class="stat-card"><div class="stat-info"><label id="a-aht-label">Avg Handle Time</label><div class="stat-num" id="a-aht">0:00:00</div></div><div class="stat-icon icon-orange"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 15"/></svg></div></div>
+        </div>
+
+        <div class="highlight-grid">
+          <div class="highlight-card"><div class="hc-eyebrow">🏆 Team Rank — Total Calls</div><div class="hc-name" id="a-rank">—</div><div class="hc-sub" id="a-rank-sub">—</div></div>
+          <div class="highlight-card"><div class="hc-eyebrow">📈 Calls vs Previous Month</div><div class="hc-name" id="a-trend">—</div><div class="hc-sub" id="a-trend-sub">—</div></div>
+          <div class="highlight-card"><div class="hc-eyebrow">⭐ Best Month — All Time</div><div class="hc-name" id="a-best">—</div><div class="hc-sub" id="a-best-sub">—</div></div>
+        </div>
+
+        <div class="card section-gap">
+          <div class="card-header"><div class="card-title">Monthly Performance (All Time)</div></div>
+          <div class="card-body">
+            <div style="overflow-x:auto;"><svg id="agent-bar-chart" style="display:block;"></svg></div>
+            <div class="legend" style="flex-direction:row;flex-wrap:wrap;gap:14px;margin-top:12px;justify-content:center;max-height:none;overflow:visible;">
+              <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span>Inbound</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#F5871F"></div><span>Outbound</span></div>
+              <div class="legend-item"><div style="width:18px;height:3px;background:#f43f5e;border-radius:2px;border-top:2px dashed #f43f5e;margin-top:1px;"></div><span style="color:#f43f5e;font-weight:600;">AHT min (right axis)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="leaderboard-card">
+          <div class="lb-header"><div class="lb-title">Month-by-Month Breakdown — <span id="agent-name-display">—</span></div></div>
+          <div id="agent-table-wrap"><div class="loading"><div class="spinner"></div> Loading data…</div></div>
+        </div>
+
+        <div class="perf-tracker-card" id="perf-tracker-card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0E8C8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+              Performance Tracker — <span id="perf-agent-name">—</span>
+              <div style="position:relative;display:inline-flex;align-items:center;margin-left:4px;" class="score-info-wrap">
+                <button aria-label="How is the score calculated?" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;color:var(--text-4);" onclick="document.getElementById('score-tooltip-box').classList.toggle('score-tip-visible')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </button>
+                <div id="score-tooltip-box" style="display:none;position:absolute;top:22px;left:0;z-index:200;background:#0B2E33;color:#E2E8F0;border-radius:10px;padding:14px 16px;font-size:12px;line-height:1.7;box-shadow:0 10px 30px rgba(0,0,0,0.4);min-width:240px;border:1px solid rgba(255,255,255,0.1);">
+                  <div style="font-size:13px;font-weight:700;color:#39C6C6;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:6px;">📊 How the Score is Calculated</div>
+                  <div style="display:flex;justify-content:space-between;gap:16px;"><span style="color:#94A3B8;">Call Volume (all-time)</span><span style="font-weight:600;">up to 40 pts</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:16px;"><span style="color:#94A3B8;">Talk Time (all-time)</span><span style="font-weight:600;">up to 30 pts</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:16px;"><span style="color:#94A3B8;">Efficiency (AHT vs target)</span><span style="font-weight:600;">up to 20 pts</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:16px;"><span style="color:#94A3B8;">Monthly Consistency</span><span style="font-weight:600;">up to 10 pts</span></div>
+                  <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);color:#94A3B8;font-size:11px;">S ≥80 · A ≥60 · B ≥40 · C &lt;40</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="perf-score-wrap" id="perf-score-wrap">
+              <div class="perf-score-ring">
+                <svg width="110" height="110" viewBox="0 0 110 110">
+                  <circle cx="55" cy="55" r="47" fill="none" stroke="#E2E8F0" stroke-width="9"/>
+                  <circle id="perf-ring-arc" cx="55" cy="55" r="47" fill="none" stroke="#0E8C8C" stroke-width="9" stroke-linecap="round" stroke-dasharray="295.3" stroke-dashoffset="295.3" style="transition:stroke-dashoffset 0.8s ease,stroke 0.4s ease;"/>
+                </svg>
+                <div class="perf-score-text"><div class="perf-score-num" id="perf-score-num">—</div><div class="perf-score-label">Score</div></div>
+              </div>
+              <div class="perf-score-detail">
+                <div class="perf-score-title" id="perf-score-title">Performance Overview</div>
+                <div class="perf-score-sub" id="perf-score-sub">Select an agent to view their performance score.</div>
+                <div id="perf-score-grade"></div>
+              </div>
+            </div>
+
+            <div class="section-header">🏅 Earned Badges</div>
+            <div class="perf-badges" id="perf-badges"><div class="perf-badge badge-gray">No badges yet — select an agent</div></div>
+
+            <div class="section-header">📊 Key Metrics (All-Time)</div>
+            <div class="perf-kpi-grid" id="perf-kpi-grid">
+              <div class="perf-kpi"><div class="perf-kpi-icon">📞</div><div class="perf-kpi-val" id="pk-calls">—</div><div class="perf-kpi-label">Total Calls</div></div>
+              <div class="perf-kpi"><div class="perf-kpi-icon">🗣️</div><div class="perf-kpi-val" id="pk-talk">—</div><div class="perf-kpi-label">Total Talk Time</div></div>
+              <div class="perf-kpi"><div class="perf-kpi-icon">📥</div><div class="perf-kpi-val" id="pk-inbound">—</div><div class="perf-kpi-label">Total Inbound</div></div>
+              <div class="perf-kpi"><div class="perf-kpi-icon">⚡</div><div class="perf-kpi-val" id="pk-aht">—</div><div class="perf-kpi-label">Avg Handle Time</div></div>
+              <div class="perf-kpi"><div class="perf-kpi-icon">🌟</div><div class="perf-kpi-val" id="pk-bestmonth">—</div><div class="perf-kpi-label">Best Month (Calls)</div></div>
+              <div class="perf-kpi"><div class="perf-kpi-icon">📅</div><div class="perf-kpi-val" id="pk-months">—</div><div class="perf-kpi-label">Months Active</div></div>
+            </div>
+
+            <div class="section-header">🎯 Monthly Goals (Current Month)</div>
+            <div class="perf-goals" id="perf-goals">
+              <div class="perf-goal-item"><div class="perf-goal-top"><span class="perf-goal-name">Calls Goal</span><span class="perf-goal-nums" id="pg-calls-nums">—</span></div><div class="perf-goal-track"><div class="perf-goal-fill fill-blue" id="pg-calls-bar" style="width:0%"></div></div></div>
+              <div class="perf-goal-item"><div class="perf-goal-top"><span class="perf-goal-name">Talk Time Goal</span><span class="perf-goal-nums" id="pg-talk-nums">—</span></div><div class="perf-goal-track"><div class="perf-goal-fill fill-purple" id="pg-talk-bar" style="width:0%"></div></div></div>
+              <div class="perf-goal-item"><div class="perf-goal-top"><span class="perf-goal-name">AHT at/under target</span><span class="perf-goal-nums" id="pg-aht-nums">—</span></div><div class="perf-goal-track"><div class="perf-goal-fill fill-green" id="pg-aht-bar" style="width:0%"></div></div></div>
+            </div>
+
+            <div class="section-header">⚡ You vs Team Average (This Month)</div>
+            <div class="perf-vs-team" id="perf-vs-team">
+              <div class="vs-item"><div class="vs-item-label">Total Calls</div><div class="vs-item-bar-wrap"><div class="vs-item-bar-track"><div class="vs-item-bar-fill" id="vt-calls-bar" style="width:50%"></div></div><div class="vs-item-vals"><span class="vs-you" id="vt-calls-you">—</span> <span class="vs-avg" id="vt-calls-avg">/ avg —</span></div></div></div>
+              <div class="vs-item"><div class="vs-item-label">Inbound Calls</div><div class="vs-item-bar-wrap"><div class="vs-item-bar-track"><div class="vs-item-bar-fill" id="vt-inbound-bar" style="width:50%"></div></div><div class="vs-item-vals"><span class="vs-you" id="vt-inbound-you">—</span> <span class="vs-avg" id="vt-inbound-avg">/ avg —</span></div></div></div>
+              <div class="vs-item"><div class="vs-item-label">Outbound Calls</div><div class="vs-item-bar-wrap"><div class="vs-item-bar-track"><div class="vs-item-bar-fill" id="vt-outbound-bar" style="width:50%"></div></div><div class="vs-item-vals"><span class="vs-you" id="vt-outbound-you">—</span> <span class="vs-avg" id="vt-outbound-avg">/ avg —</span></div></div></div>
+              <div class="vs-item"><div class="vs-item-label">Avg Handle Time</div><div class="vs-item-bar-wrap"><div class="vs-item-bar-track"><div class="vs-item-bar-fill" id="vt-aht-bar" style="width:50%"></div></div><div class="vs-item-vals"><span class="vs-you" id="vt-aht-you">—</span> <span class="vs-avg" id="vt-aht-avg">/ avg —</span></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="lb-tooltip" id="lb-tooltip" role="tooltip" aria-live="polite"></div>
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   BANYAN TREATMENT CENTER — AGENT DASHBOARD
+   ───────────────────────────────────────────────────────────────────
+   ▼▼▼  CONFIGURE YOUR GOOGLE SHEET HERE  ▼▼▼
+
+   1. Open your Google Sheet → Share → General access →
+      "Anyone with the link" → Viewer.
+   2. From the sheet URL, copy the long ID between /d/ and /edit:
+        https://docs.google.com/spreadsheets/d/THIS_IS_THE_ID/edit#gid=0
+   3. Paste that ID into SHEET_ID below, and put the tab (sheet) name
+      into SHEET_NAME (the little tab label at the bottom, e.g. "Sheet1").
+
+   Expected columns, left to right (row 1 = headers, data starts row 2):
+     A: Month          (e.g. "July 2026")
+     B: Agent          (agent name)
+     C: Inbound calls  (number)
+     D: Inbound time   (h:mm:ss, mm:ss, or seconds)
+     E: Outbound calls (number)
+     F: Talk time      (h:mm:ss, mm:ss, or seconds)
+     G: Hold time      (h:mm:ss, mm:ss, or seconds)
+     H: AHT            (h:mm:ss, mm:ss, or seconds)
+
+   No API key needed — the dashboard reads the sheet's public CSV feed
+   and auto-refreshes every 60 seconds.
+   ═══════════════════════════════════════════════════════════════════ */
+const SHEET_ID   = '1eNbfj5k0BLXa5fpU41wbuquWUYdLb-S7KFOjOLP3xZo';
+const SHEET_NAME = 'Consolidated';
+
+/* ── Tunable targets / goals (adjust to Banyan's standards) ── */
+const AHT_TARGET_SEC     = 6 * 60;      // AHT goal: 6:00. At/under = healthy (green)
+const TEAM_CALL_TARGET   = 5000;        // team total-calls monthly goal
+const AGENT_CALL_GOAL    = 800;         // per-agent monthly calls goal
+const AGENT_TALK_GOAL    = 35 * 3600;   // per-agent monthly talk-time goal (seconds)
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const COLORS = ['#0E8C8C','#F5871F','#17A2A6','#EFA94A','#0B6E6E','#5BC0C0','#C4661B','#2E9E9E','#F6B26B','#127D7D','#E0812A','#7FD1D1','#9A5B12','#43B3B3'];
+
+/* ── AGENT PHOTO MAP (optional) ──────────────────────────────────────
+   Key = agent name exactly as it appears in your sheet.
+   Value = direct image URL. Leave {} to show colored initials.
+──────────────────────────────────────────────────────────────────── */
+const AGENT_PHOTOS = {};
+
+function avatarHTML(name, size, color){
+  size = size || 34;
+  const photo = AGENT_PHOTOS[name];
+  const initials = (name||'?').split(' ').map(n=>n[0]||'').join('').toUpperCase().slice(0,2);
+  const base = `border-radius:50%;width:${size}px;height:${size}px;flex-shrink:0;`;
+  if(photo){
+    return `<img src="${photo}" alt="${initials}" style="${base}object-fit:cover;border:2px solid ${color||'var(--border)'};"
+      onerror="this.outerHTML='<div style=\\'${base}background:${color||'#0E8C8C'};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.35)}px;font-weight:800;color:#fff;\\'>${initials}</div>'"/>`;
+  }
+  return `<div style="${base}background:${color||'#0E8C8C'};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.35)}px;font-weight:800;color:#fff;">${initials}</div>`;
+}
+
+/* ── Time helpers ── */
+function parseTime(v){
+  if(v==null) return 0;
+  let s=String(v).trim();
+  if(!s) return 0;
+  if(/^\d+(\.\d+)?$/.test(s)) return Math.round(parseFloat(s));           // plain number => seconds
+  if(/[hms]/i.test(s)){
+    const h=s.match(/(\d+(?:\.\d+)?)\s*h/i), m=s.match(/(\d+(?:\.\d+)?)\s*m/i), sec=s.match(/(\d+(?:\.\d+)?)\s*s/i);
+    if(h||m||sec) return Math.round((h?+h[1]:0)*3600+(m?+m[1]:0)*60+(sec?+sec[1]:0));
+  }
+  const p=s.split(':').map(x=>parseFloat(x)||0);
+  if(p.length===3) return Math.round(p[0]*3600+p[1]*60+p[2]);
+  if(p.length===2) return Math.round(p[0]*60+p[1]);
+  return Math.round(p[0]||0);
+}
+function fmtTime(sec){ sec=Math.max(0,Math.round(sec||0)); const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60; return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+function fmtShort(sec){ sec=Math.max(0,Math.round(sec||0)); const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60; return h>0?`${h}h ${String(m).padStart(2,'0')}m`:`${m}m ${String(s).padStart(2,'0')}s`; }
+function parseNum(v){ return parseInt(String(v||'0').replace(/[, ]/g,''))||0; }
+
+/* ── CSV parser (handles quoted fields, commas, newlines) ── */
+function parseCSV(text){
+  const rows=[]; let row=[],cur='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=c; }
+    else if(c==='"') inQ=true;
+    else if(c===','){ row.push(cur); cur=''; }
+    else if(c==='\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+    else if(c!=='\r') cur+=c;
+  }
+  if(cur!==''||row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+
+const _now=new Date();
+let allData=[], currentMonth=MONTHS[_now.getMonth()], currentYear=String(_now.getFullYear()),
+    currentView='monthly', sortCol='totalCalls', sortDir=1, currentSection='team',
+    wlView='monthly', _firstLoad=true;
+
+document.addEventListener('DOMContentLoaded',function(){
+  const el=document.getElementById('filter-month'); if(el) el.textContent=currentMonth+' '+currentYear;
+  const yr=document.getElementById('filter-year'); if(yr) yr.textContent=currentYear;
+  updateMonthNavBtn();
+  const t=document.getElementById('wl-target'); if(t) t.textContent=fmtTime(AHT_TARGET_SEC);
+});
+
+function setView(v){
+  currentView=v;
+  document.getElementById('btn-monthly').className='btn-toggle'+(v==='monthly'?' active':'');
+  document.getElementById('btn-alltime').className='btn-toggle'+(v==='alltime'?' active':'');
+  renderAll();
+}
+function setSection(s){
+  currentSection=s;
+  document.getElementById('btn-section-team').className='nav-pill'+(s==='team'?' active':'');
+  document.getElementById('btn-section-agent').className='nav-pill'+(s==='agent'?' active':'');
+  document.getElementById('btn-section-watchlist').className='nav-pill'+(s==='watchlist'?' active':'');
+  document.getElementById('section-team').style.display=s==='team'?'':'none';
+  document.getElementById('section-agent').style.display=s==='agent'?'':'none';
+  document.getElementById('section-watchlist').style.display=s==='watchlist'?'':'none';
+  document.getElementById('agent-filter-group').style.display=s==='agent'?'':'none';
+  if(s==='team'||s==='watchlist') document.getElementById('filter-agent').value='all';
+  renderAll();
+}
+function setWlView(v){
+  wlView=v;
+  document.getElementById('btn-wl-monthly').className='btn-toggle'+(v==='monthly'?' active':'');
+  document.getElementById('btn-wl-quarterly').className='btn-toggle'+(v==='quarterly'?' active':'');
+  document.getElementById('wl-card-monthly').style.display=v==='monthly'?'':'none';
+  document.getElementById('wl-card-quarterly').style.display=v==='quarterly'?'':'none';
+  renderWatchlist();
+}
+function changeMonth(dir){
+  const idx=MONTHS.indexOf(currentMonth);
+  if(dir===1){
+    const nowY=parseInt(_now.getFullYear()), nowM=_now.getMonth();
+    const nextIdx=(idx+1)%12;
+    const nextYear=idx===11?parseInt(currentYear)+1:parseInt(currentYear);
+    if(nextYear>nowY||(nextYear===nowY&&nextIdx>nowM)) return;
+  }
+  const newIdx=(idx+dir+12)%12;
+  if(dir===1&&idx===11) currentYear=String(parseInt(currentYear)+1);
+  if(dir===-1&&idx===0) currentYear=String(parseInt(currentYear)-1);
+  currentMonth=MONTHS[newIdx];
+  document.getElementById('filter-month').textContent=currentMonth+' '+currentYear;
+  document.getElementById('filter-year').textContent=currentYear;
+  updateMonthNavBtn();
+  renderAll();
+}
+function updateMonthNavBtn(){
+  const btn=document.querySelector('.filter-nav[onclick="changeMonth(1)"]');
+  if(!btn) return;
+  const idx=MONTHS.indexOf(currentMonth);
+  const nextIdx=(idx+1)%12;
+  const nextYear=idx===11?parseInt(currentYear)+1:parseInt(currentYear);
+  const nowY=_now.getFullYear(), nowM=_now.getMonth();
+  const atMax=nextYear>nowY||(nextYear===nowY&&nextIdx>nowM);
+  btn.style.opacity=atMax?'0.3':''; btn.style.cursor=atMax?'not-allowed':'';
+  btn.title=atMax?'Cannot navigate to a future month':'';
+}
+
+/* ── DATA LOAD (public CSV feed, keyless, auto-refresh) ── */
+async function loadData(silent=false){
+  if(_firstLoad) document.getElementById('table-wrap').innerHTML='<div class="loading"><div class="spinner"></div> Fetching from Google Sheets…</div>';
+  document.getElementById('error-area').innerHTML='';
+  if(!SHEET_ID||SHEET_ID==='PASTE_YOUR_SHEET_ID_HERE'){
+    document.getElementById('error-area').innerHTML='<div class="error-msg">⚙️ Not linked yet — open this file and paste your Google Sheet ID into <strong>SHEET_ID</strong> near the top of the script. See the instructions there.</div>';
+    document.getElementById('table-wrap').innerHTML='';
+    return;
+  }
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  try{
+    const res=await fetch(url);
+    if(!res.ok) throw new Error(`HTTP ${res.status} — check the sheet is shared "Anyone with the link".`);
+    const text=await res.text();
+    const rows=parseCSV(text).filter(r=>r.some(c=>String(c).trim()!==''));
+    allData=rows.slice(1).filter(r=>(r[0]&&r[0].trim())||(r[1]&&r[1].trim())).map(r=>{
+      const inbound=parseNum(r[2]), outbound=parseNum(r[4]);
+      return {
+        month:(r[0]||'').trim(), name:(r[1]||'').trim(),
+        inbound, inboundTime:parseTime(r[3]), outbound,
+        talkTime:parseTime(r[5]), holdTime:parseTime(r[6]), aht:parseTime(r[7]),
+        totalCalls:inbound+outbound
+      };
+    }).filter(r=>r.name);
+    const agents=[...new Set(allData.map(d=>d.name))].sort();
+    const sel=document.getElementById('filter-agent');
+    const prev=sel.value;
+    sel.innerHTML='<option value="all">All agents</option>'+agents.map(a=>`<option value="${a}">${a}</option>`).join('');
+    sel.value=agents.includes(prev)?prev:'all';
+    populateWatchlistFilters();
+    const now=new Date();
+    _firstLoad=false;
+    document.getElementById('info-latest').textContent=now.toLocaleDateString();
+    document.getElementById('info-synced').textContent=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    renderAll(!silent);
+  }catch(e){
+    document.getElementById('error-area').innerHTML=`<div class="error-msg">⚠️ Could not load data: ${e.message}</div>`;
+    if(_firstLoad) document.getElementById('table-wrap').innerHTML='';
+  }
+}
+
+/* ── Filtering & aggregation ── */
+function monthMatches(r){ const p=r.month.trim().split(' '); return p[0]===currentMonth&&p[1]===currentYear; }
+function aggregateByAgent(data){
+  const map=new Map();
+  data.forEach(r=>{
+    if(!map.has(r.name)) map.set(r.name,{name:r.name,inbound:0,inboundTime:0,outbound:0,talkTime:0,holdTime:0,totalCalls:0,_ahtW:0});
+    const a=map.get(r.name);
+    a.inbound+=r.inbound; a.inboundTime+=r.inboundTime; a.outbound+=r.outbound;
+    a.talkTime+=r.talkTime; a.holdTime+=r.holdTime; a.totalCalls+=r.totalCalls;
+    a._ahtW+=r.aht*(r.totalCalls||1);
+    a._calls=(a._calls||0)+(r.totalCalls||1);
+  });
+  return [...map.values()].map(a=>{ a.aht=a._calls>0?Math.round(a._ahtW/a._calls):0; delete a._ahtW; delete a._calls; return a; });
+}
+function scopedRows(){ return currentView==='monthly'?allData.filter(monthMatches):allData; }
+function leaderboardRows(){
+  let d=scopedRows();
+  d=aggregateByAgent(d);
+  const q=(document.getElementById('lb-search')?.value||'').trim().toLowerCase();
+  if(q) d=d.filter(r=>r.name.toLowerCase().includes(q));
+  return d;
+}
+
+/* ── ORCHESTRATOR ── */
+function renderAll(animate=false){
+  const scopeLabel=currentView==='monthly'?`${currentMonth} ${currentYear}`:'All Time';
+  const infoScope=document.getElementById('info-scope'); if(infoScope) infoScope.textContent=scopeLabel;
+  set('lb-period',scopeLabel);
+  set('inbound-chart-title',`Inbound Calls by Agent — ${scopeLabel}`);
+  set('talk-chart-title',`Talk Time by Agent — ${scopeLabel}`);
+  if(currentSection==='team'){
+    renderStatCards(); renderTopPerformers(); renderGoal();
+    buildDonuts(); renderLeaderboard(); renderTrendLineChart(); renderInsights();
+  } else if(currentSection==='agent'){
+    renderAgentSection();
+  } else if(currentSection==='watchlist'){
+    renderWatchlist();
+  }
+  updateSortLabel();
+}
+function set(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; }
+
+/* ── STAT CARDS (team) ── */
+function prevMonthRows(){
+  const idx=MONTHS.indexOf(currentMonth);
+  const pM=MONTHS[(idx-1+12)%12];
+  const pY=idx===0?String(parseInt(currentYear)-1):currentYear;
+  return allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===pM&&p[1]===pY;});
+}
+function trendHTML(cur,prev,lowerBetter=false){
+  if(!prev||prev===0) return '';
+  const diff=((cur-prev)/prev)*100;
+  const up=diff>=0;
+  const good=lowerBetter?!up:up;
+  const cls=good?'trend-up':'trend-down';
+  return `<span class="${cls}">${up?'▲':'▼'} ${Math.abs(diff).toFixed(1)}%</span> vs last month`;
+}
+function renderStatCards(){
+  const rows=scopedRows();
+  const sum=k=>rows.reduce((s,r)=>s+r[k],0);
+  const n=rows.length||1;
+  const inbound=sum('inbound'), outbound=sum('outbound'), total=inbound+outbound;
+  const avgTalk=Math.round(sum('talkTime')/n), avgHold=Math.round(sum('holdTime')/n);
+  const totCalls=sum('totalCalls');
+  const ahtW=rows.reduce((s,r)=>s+r.aht*(r.totalCalls||1),0);
+  const ahtN=rows.reduce((s,r)=>s+(r.totalCalls||1),0)||1;
+  const avgAht=Math.round(ahtW/ahtN);
+  set('s-inbound',inbound.toLocaleString()); set('s-outbound',outbound.toLocaleString());
+  set('s-total',total.toLocaleString());
+  set('s-talk',fmtShort(avgTalk)); set('s-hold',fmtShort(avgHold)); set('s-aht',fmtTime(avgAht));
+
+  if(currentView==='monthly'){
+    const pr=prevMonthRows();
+    const psum=k=>pr.reduce((s,r)=>s+r[k],0);
+    const pn=pr.length||1;
+    const pAhtW=pr.reduce((s,r)=>s+r.aht*(r.totalCalls||1),0), pAhtN=pr.reduce((s,r)=>s+(r.totalCalls||1),0)||1;
+    document.getElementById('t-inbound').innerHTML=trendHTML(inbound,psum('inbound'));
+    document.getElementById('t-outbound').innerHTML=trendHTML(outbound,psum('outbound'));
+    document.getElementById('t-total').innerHTML=trendHTML(total,psum('inbound')+psum('outbound'));
+    document.getElementById('t-talk').innerHTML=trendHTML(avgTalk,Math.round(psum('talkTime')/pn));
+    document.getElementById('t-hold').innerHTML=trendHTML(avgHold,Math.round(psum('holdTime')/pn),true);
+    document.getElementById('t-aht').innerHTML=trendHTML(avgAht,Math.round(pAhtW/pAhtN),true);
+  } else {
+    ['t-inbound','t-outbound','t-total','t-talk','t-hold','t-aht'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='All-time total';});
+  }
+}
+
+/* ── TOP PERFORMERS ── */
+function renderTopPerformers(){
+  const agg=aggregateByAgent(scopedRows());
+  const byInb=[...agg].sort((a,b)=>b.inbound-a.inbound)[0];
+  const byOut=[...agg].sort((a,b)=>b.outbound-a.outbound)[0];
+  const withCalls=agg.filter(a=>a.totalCalls>0);
+  const byAht=[...withCalls].sort((a,b)=>a.aht-b.aht)[0];
+  set('top-inbound-name',byInb?byInb.name:'—'); set('top-inbound-sub',byInb?`${byInb.inbound.toLocaleString()} inbound calls`:'No data');
+  set('top-outbound-name',byOut?byOut.name:'—'); set('top-outbound-sub',byOut?`${byOut.outbound.toLocaleString()} outbound calls`:'No data');
+  set('top-aht-name',byAht?byAht.name:'—'); set('top-aht-sub',byAht?`${fmtTime(byAht.aht)} handle time`:'No data');
+}
+
+/* ── GOAL TRACKER (team calls, monthly) ── */
+function renderGoal(){
+  const rows=currentView==='monthly'?allData.filter(monthMatches):scopedRows();
+  const calls=rows.reduce((s,r)=>s+r.totalCalls,0);
+  const target=TEAM_CALL_TARGET;
+  const pct=Math.min(100,Math.round(calls/target*100));
+  set('goal-bar-label',`${calls.toLocaleString()} / ${target.toLocaleString()} calls`);
+  set('goal-pct-label',pct+'%');
+  const fill=document.getElementById('goal-fill');
+  if(fill){ fill.style.width=pct+'%'; fill.style.background=calls>=target?'linear-gradient(90deg,#059669,#34d399)':'linear-gradient(90deg,#0E8C8C,#5BC0C0)'; }
+  set('goal-current',calls.toLocaleString());
+  set('goal-remaining',Math.max(0,target-calls).toLocaleString());
+  set('goal-target',target.toLocaleString());
+  set('goal-subtext',calls>=target?'🎉 Target reached — great work!':`${Math.max(0,target-calls).toLocaleString()} more calls to hit the ${currentView==='monthly'?currentMonth:'all-time'} target.`);
+}
+
+/* ── DONUTS ── */
+const DONUT_COLORS=['var(--brand)','var(--accent)','#17A2A6','#EFA94A','#0B6E6E','var(--purple)','var(--cyan)','var(--pink)','var(--teal)','var(--indigo)'];
+function buildDonut(svgId,legendId,items,centerVal,centerLabel){
+  const svg=document.getElementById(svgId), legend=document.getElementById(legendId);
+  if(!svg||!legend) return;
+  if(!items.length){ svg.innerHTML='<text x="90" y="94" text-anchor="middle" fill="#94a3b8" font-size="11">No data</text>'; legend.innerHTML=''; return; }
+  const cx=90,cy=90,r=70,ir=44,total=items.reduce((s,i)=>s+i.val,0)||1;
+  let angle=-Math.PI/2,paths='';
+  items.forEach((item,idx)=>{
+    const slice=(item.val/total)*2*Math.PI;
+    if(slice<0.0001){ angle+=slice; return; }
+    const color=DONUT_COLORS[idx%DONUT_COLORS.length];
+    const a1=angle,a2=angle+slice; angle=a2;
+    const large=slice>Math.PI?1:0;
+    const x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1), x2=cx+r*Math.cos(a2), y2=cy+r*Math.sin(a2);
+    const ix1=cx+ir*Math.cos(a2), iy1=cy+ir*Math.sin(a2), ix2=cx+ir*Math.cos(a1), iy2=cy+ir*Math.sin(a1);
+    paths+=`<path class="donut-seg" d="M${x1.toFixed(2)} ${y1.toFixed(2)} A${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} L${ix1.toFixed(2)} ${iy1.toFixed(2)} A${ir} ${ir} 0 ${large} 0 ${ix2.toFixed(2)} ${iy2.toFixed(2)} Z" fill="${color}"><title>${item.label}: ${item.display||item.val}</title></path>`;
+  });
+  svg.innerHTML=paths+`<text class="donut-center-val" x="90" y="86" text-anchor="middle">${centerVal}</text><text class="donut-center-label" x="90" y="104" text-anchor="middle">${centerLabel}</text>`;
+  legend.innerHTML=items.map((item,idx)=>`<div class="legend-item"><div class="legend-dot" style="background:${DONUT_COLORS[idx%DONUT_COLORS.length]}"></div><span>${item.label}</span><span style="margin-left:auto;font-weight:700;color:var(--text-1);">${item.display||item.val}</span></div>`).join('');
+}
+function buildDonuts(){
+  const agg=aggregateByAgent(scopedRows());
+  const inb=[...agg].filter(a=>a.inbound>0).sort((a,b)=>b.inbound-a.inbound).slice(0,10)
+    .map(a=>({label:a.name,val:a.inbound,display:a.inbound.toLocaleString()}));
+  const totalInb=agg.reduce((s,a)=>s+a.inbound,0);
+  buildDonut('donut-inbound','legend-inbound',inb,totalInb.toLocaleString(),'Inbound');
+  const talk=[...agg].filter(a=>a.talkTime>0).sort((a,b)=>b.talkTime-a.talkTime).slice(0,10)
+    .map(a=>({label:a.name,val:a.talkTime,display:fmtShort(a.talkTime)}));
+  const totalTalk=agg.reduce((s,a)=>s+a.talkTime,0);
+  buildDonut('donut-talk','legend-talk',talk,fmtShort(totalTalk),'Talk');
+}
+
+/* ── LEADERBOARD TABLE ── */
+const COL_LABELS={name:'Agent',inbound:'Inbound',inboundTime:'Inbound Time',outbound:'Outbound',totalCalls:'Total Calls',talkTime:'Talk Time',holdTime:'Hold Time',aht:'AHT'};
+function updateSortLabel(){
+  const el=document.getElementById('lb-sort-label'); if(!el) return;
+  el.textContent=`Ranked by ${COL_LABELS[sortCol]||sortCol} ${sortDir===1?'↓':'↑'} · Click column to re-rank`;
+}
+function sort(col){ if(sortCol===col) sortDir*=-1; else{sortCol=col;sortDir=1;} renderAll(); }
+function renderLeaderboard(){
+  const wrap=document.getElementById('table-wrap');
+  let rows=leaderboardRows();
+  if(!rows.length){ wrap.innerHTML='<div style="padding:18px;color:var(--text-4);font-size:13px;font-weight:500;">No data for this scope yet.</div>'; return; }
+  rows=[...rows].sort((a,b)=>{ const av=a[sortCol],bv=b[sortCol]; if(typeof av==='string') return sortDir*String(av).localeCompare(String(bv)); return sortDir*((bv)-(av)); });
+  const th=(key,label,extra='')=>`<th class="sortable${sortCol===key?' sorted':''}" onclick="sort('${key}')" ${extra}>${label}${sortCol===key?(sortDir===1?' ↓':' ↑'):''}</th>`;
+  const html=`<div style="overflow-x:auto"><table>
+    <thead><tr>
+      <th style="width:44px;text-align:center;">#</th>
+      ${th('name','Agent','style="text-align:left;"')}
+      ${th('inbound','Inbound')}
+      ${th('inboundTime','Inbound Time')}
+      ${th('outbound','Outbound')}
+      ${th('totalCalls','Total Calls')}
+      ${th('talkTime','Talk Time')}
+      ${th('holdTime','Hold Time')}
+      ${th('aht','AHT')}
+    </tr></thead>
+    <tbody>${rows.map((r,i)=>{
+      const color=COLORS[i%COLORS.length];
+      const ahtCls=r.aht===0?'':(r.aht<=AHT_TARGET_SEC?'vob-high':r.aht<=AHT_TARGET_SEC*1.25?'vob-mid':'vob-low');
+      return `<tr>
+        <td style="text-align:center;font-weight:800;color:var(--text-3);">${i+1}</td>
+        <td><div style="display:flex;align-items:center;gap:10px;">${avatarHTML(r.name,30,color)}<span style="font-weight:600;color:var(--text-1);cursor:pointer;" onclick="jumpToAgent('${r.name.replace(/'/g,"\\'")}')">${r.name}</span></div></td>
+        <td>${r.inbound.toLocaleString()}</td>
+        <td>${fmtTime(r.inboundTime)}</td>
+        <td>${r.outbound.toLocaleString()}</td>
+        <td style="font-weight:700;color:var(--text-1);">${r.totalCalls.toLocaleString()}</td>
+        <td>${fmtTime(r.talkTime)}</td>
+        <td>${fmtTime(r.holdTime)}</td>
+        <td>${r.aht?`<span class="vob-pct ${ahtCls}">${fmtTime(r.aht)}</span>`:'—'}</td>
+      </tr>`;}).join('')}</tbody>
+  </table></div>`;
+  wrap.innerHTML=html;
+}
+function jumpToAgent(name){
+  setSection('agent');
+  const sel=document.getElementById('filter-agent'); if(sel){ sel.value=name; }
+  renderAll();
+}
+
+/* ── TREND LINE (monthly call volume over time) ── */
+function niceCeil(v){ if(v<=0) return 10; const mag=Math.pow(10,Math.floor(Math.log10(v))); const n=v/mag; let nice; if(n<=1)nice=1;else if(n<=2)nice=2;else if(n<=5)nice=5;else nice=10; return nice*mag; }
+function renderTrendLineChart(){
+  const svg=document.getElementById('trend-line-chart'); if(!svg) return;
+  const m=new Map();
+  allData.forEach(r=>{ const k=r.month.trim(); if(!k) return; if(!m.has(k)) m.set(k,{total:0,inbound:0,outbound:0}); const o=m.get(k); o.total+=r.totalCalls; o.inbound+=r.inbound; o.outbound+=r.outbound; });
+  const sorted=[...m.entries()].map(([k,v])=>{ const p=k.split(' '); return {label:k,shortLabel:(p[0]||'').slice(0,3)+' '+(p[1]||'').slice(2),monthIdx:MONTHS.indexOf(p[0]),yearNum:parseInt(p[1])||0,...v}; }).sort((a,b)=>(a.yearNum-b.yearNum)||(a.monthIdx-b.monthIdx));
+  if(sorted.length<2){ svg.innerHTML='<text x="10" y="30" fill="#94a3b8" font-size="12">Not enough monthly data yet</text>'; svg.setAttribute('viewBox','0 0 500 60'); return; }
+  const W=Math.max(500,sorted.length*80+80),H=200,padL=48,padR=16,padT=16,padB=36;
+  const plotW=W-padL-padR,plotH=H-padT-padB;
+  const maxVal=Math.max(...sorted.map(s=>s.total),1), niceM=niceCeil(maxVal);
+  const xStep=plotW/(sorted.length-1), px=i=>padL+i*xStep, py=v=>padT+plotH-(v/niceM)*plotH;
+  let grid='',ylabels='';
+  for(let i=0;i<=4;i++){ const v=niceM*i/4,y=py(v); grid+=`<line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#E2E8F0" stroke-dasharray="3,3"/>`; ylabels+=`<text x="${padL-6}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="10" fill="#94a3b8">${Math.round(v)}</text>`; }
+  const axes=`<line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT+plotH}" stroke="#CBD5E1"/><line x1="${padL}" x2="${W-padR}" y1="${padT+plotH}" y2="${padT+plotH}" stroke="#CBD5E1"/>`;
+  const series=[{key:'total',color:'#4f46e5',fill:'rgba(79,70,229,0.08)'},{key:'inbound',color:'#2563eb',fill:'rgba(37,99,235,0.06)'},{key:'outbound',color:'#F5871F',fill:'rgba(245,135,31,0.08)'}];
+  let lines='',dots='',xlabels='';
+  series.forEach(s=>{
+    const pts=sorted.map((mm,i)=>`${px(i).toFixed(1)},${py(mm[s.key]).toFixed(1)}`).join(' ');
+    const fillPoly=`${px(0).toFixed(1)},${(padT+plotH)} ${pts} ${px(sorted.length-1).toFixed(1)},${(padT+plotH)}`;
+    lines+=`<polygon points="${fillPoly}" fill="${s.fill}" stroke="none"/>`;
+    lines+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    sorted.forEach((mm,i)=>{ dots+=`<circle cx="${px(i).toFixed(1)}" cy="${py(mm[s.key]).toFixed(1)}" r="3.5" fill="${s.color}" stroke="#fff" stroke-width="1.5"><title>${mm.label} — ${COL_LABELS[s.key]||s.key}: ${mm[s.key]}</title></circle>`; });
+  });
+  sorted.forEach((mm,i)=>{ xlabels+=`<text x="${px(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#64748b">${mm.shortLabel}</text>`; });
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width',W); svg.setAttribute('height',H);
+  svg.innerHTML=grid+axes+ylabels+lines+dots+xlabels;
+}
+
+/* ── INSIGHTS ── */
+function renderInsights(){
+  const grid=document.getElementById('insights-grid'); if(!grid) return;
+  if(!allData.length){ grid.innerHTML='<div class="insight-chip"><div class="ic-icon">⏳</div><div class="ic-val">Waiting for data</div></div>'; return; }
+  const cur=aggregateByAgent(allData.filter(monthMatches));
+  const chips=[];
+  const idx=MONTHS.indexOf(currentMonth);
+  const pM=MONTHS[(idx-1+12)%12], pY=idx===0?String(parseInt(currentYear)-1):currentYear;
+  const prev=aggregateByAgent(allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===pM&&p[1]===pY;}));
+  const topCaller=[...cur].sort((a,b)=>b.totalCalls-a.totalCalls)[0];
+  if(topCaller&&topCaller.totalCalls>0) chips.push({cls:'good',icon:'🏆',val:topCaller.name,label:`most calls this month (${topCaller.totalCalls.toLocaleString()})`});
+  if(cur.length&&prev.length){
+    let bestGain=null,bv=-Infinity;
+    cur.forEach(r=>{ const p=prev.find(x=>x.name===r.name); if(p){const g=r.totalCalls-p.totalCalls; if(g>bv){bv=g;bestGain=r;}} });
+    if(bestGain&&bv>0) chips.push({cls:'highlight',icon:'📈',val:bestGain.name,label:`most improved: +${bv.toLocaleString()} calls vs ${pM}`});
+  }
+  const withCalls=cur.filter(a=>a.totalCalls>0);
+  const bestAht=[...withCalls].sort((a,b)=>a.aht-b.aht)[0];
+  if(bestAht) chips.push({cls:'good',icon:'⚡',val:bestAht.name,label:`fastest handle time: ${fmtTime(bestAht.aht)}`});
+  const lowHold=[...withCalls].sort((a,b)=>a.holdTime-b.holdTime)[0];
+  if(lowHold) chips.push({cls:'highlight',icon:'⏱️',val:lowHold.name,label:`lowest hold time this month (${fmtShort(lowHold.holdTime)})`});
+  const overTarget=withCalls.filter(a=>a.aht>AHT_TARGET_SEC);
+  if(overTarget.length===0&&withCalls.length) chips.push({cls:'good',icon:'✅',val:'All agents',label:`met the ${fmtTime(AHT_TARGET_SEC)} AHT target this month`});
+  else if(overTarget.length) chips.push({cls:'warn',icon:'⚠️',val:`${overTarget.length} agent${overTarget.length>1?'s':''}`,label:`over the ${fmtTime(AHT_TARGET_SEC)} AHT target this month`});
+  const monthTotals=new Map();
+  allData.forEach(r=>{const k=r.month.trim();monthTotals.set(k,(monthTotals.get(k)||0)+r.totalCalls);});
+  let bestMonth='',bmv=0; monthTotals.forEach((v,k)=>{if(v>bmv){bmv=v;bestMonth=k;}});
+  if(bestMonth) chips.push({cls:'highlight',icon:'🌟',val:`${bmv.toLocaleString()} calls`,label:`best team month ever (${bestMonth})`});
+  if(!chips.length) chips.push({cls:'',icon:'📊',val:'More data needed',label:'insights appear as months accumulate'});
+  grid.innerHTML=chips.map(c=>`<div class="insight-chip ${c.cls||''}"><div class="ic-icon">${c.icon}</div><div class="ic-val">${c.val}</div><div class="ic-label">${c.label}</div></div>`).join('');
+}
+
+/* ── AGENT SECTION ── */
+function renderAgentSection(){
+  const agentName=document.getElementById('filter-agent').value;
+  const empty=document.getElementById('agent-empty'), content=document.getElementById('agent-content');
+  if(agentName==='all'){ empty.style.display=''; content.style.display='none'; renderAgentOverview(); return; }
+  empty.style.display='none'; content.style.display='';
+  set('agent-name-display',agentName);
+
+  const rows=allData.filter(d=>d.name===agentName).map(d=>{ const p=d.month.trim().split(' '); return {...d,monthName:p[0]||'',yearNum:parseInt(p[1])||0,monthIdx:MONTHS.indexOf(p[0])}; }).sort((a,b)=>(a.yearNum-b.yearNum)||(a.monthIdx-b.monthIdx));
+  const cur=rows.find(r=>r.monthName===currentMonth&&r.yearNum===parseInt(currentYear));
+  set('a-calls-label',`Total Calls — ${currentMonth} ${currentYear}`);
+  set('a-aht-label',`Avg Handle Time — ${currentMonth} ${currentYear}`);
+  set('a-calls',(cur?cur.totalCalls:0).toLocaleString());
+  set('a-inbound',(cur?cur.inbound:0).toLocaleString());
+  set('a-outbound',(cur?cur.outbound:0).toLocaleString());
+  set('a-aht',cur?fmtTime(cur.aht):'0:00:00');
+
+  const monthAgg=aggregateByAgent(allData.filter(monthMatches));
+  const ranked=[...monthAgg].sort((a,b)=>b.totalCalls-a.totalCalls);
+  const ri=ranked.findIndex(r=>r.name===agentName);
+  if(ri>=0){ set('a-rank',`#${ri+1} of ${ranked.length}`); set('a-rank-sub',`${ranked[ri].totalCalls.toLocaleString()} calls this month`); }
+  else { set('a-rank','—'); set('a-rank-sub',`No data for ${currentMonth} ${currentYear}`); }
+
+  const ci=cur?rows.indexOf(cur):-1;
+  if(ci>0){
+    const prev=rows[ci-1], t=document.getElementById('a-trend');
+    if(prev.totalCalls===0){ t.textContent='—'; set('a-trend-sub','No prior month data'); }
+    else { const diff=((cur.totalCalls-prev.totalCalls)/prev.totalCalls)*100, up=diff>=0;
+      t.innerHTML=`<span class="${up?'trend-up':'trend-down'}">${up?'▲':'▼'} ${Math.abs(diff).toFixed(1)}%</span>`;
+      set('a-trend-sub',`${prev.monthName} ${prev.yearNum}: ${prev.totalCalls} → ${cur.totalCalls} calls`); }
+  } else { document.getElementById('a-trend').textContent='—'; set('a-trend-sub','Not enough history yet'); }
+
+  if(rows.length){ const best=[...rows].sort((a,b)=>b.totalCalls-a.totalCalls)[0]; set('a-best',`${best.monthName} ${best.yearNum}`); set('a-best-sub',`${best.totalCalls.toLocaleString()} calls · ${fmtTime(best.aht)} AHT`); }
+  else { set('a-best','—'); set('a-best-sub','No data yet'); }
+
+  buildAgentBarChart(rows);
+  renderAgentTable(rows);
+  renderPerfTracker(agentName,rows,cur,monthAgg);
+}
+
+function renderAgentOverview(){
+  const agg=aggregateByAgent(scopedRows());
+  set('ov-period-label',currentView==='monthly'?`${currentMonth} ${currentYear}`:'All Time');
+  set('ov-agent-count',agg.length);
+  const top=[...agg].sort((a,b)=>b.totalCalls-a.totalCalls)[0];
+  set('ov-top-calls',top?top.totalCalls.toLocaleString():'—');
+  const withCalls=agg.filter(a=>a.totalCalls>0);
+  const ahtW=withCalls.reduce((s,a)=>s+a.aht*a.totalCalls,0), ahtN=withCalls.reduce((s,a)=>s+a.totalCalls,0)||1;
+  set('ov-avg-aht',withCalls.length?fmtTime(Math.round(ahtW/ahtN)):'—');
+
+  const ranked=[...agg].sort((a,b)=>b.totalCalls-a.totalCalls);
+  const grid=document.getElementById('ov-agent-grid');
+  if(grid) grid.innerHTML=ranked.map((a,i)=>{
+    const color=COLORS[i%COLORS.length];
+    const ahtOk=a.aht&&a.aht<=AHT_TARGET_SEC;
+    const ahtColor=!a.aht?'var(--text-4)':(ahtOk?'var(--emerald)':'var(--rose)');
+    const bar=top&&top.totalCalls?Math.round(a.totalCalls/top.totalCalls*100):0;
+    return `<div onclick="jumpToAgent('${a.name.replace(/'/g,"\\'")}')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:box-shadow .15s,transform .15s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">${avatarHTML(a.name,36,color)}<div style="min-width:0;"><div style="font-size:13px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.name}</div><div style="font-size:11px;color:var(--text-4);">#${i+1} by calls</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;text-align:center;">
+        <div style="background:var(--surface);border-radius:6px;padding:5px 4px;"><div style="font-size:15px;font-weight:800;color:var(--text-1);line-height:1;">${a.inbound.toLocaleString()}</div><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-4);margin-top:2px;">Inbound</div></div>
+        <div style="background:var(--surface);border-radius:6px;padding:5px 4px;"><div style="font-size:15px;font-weight:800;color:var(--text-1);line-height:1;">${a.outbound.toLocaleString()}</div><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-4);margin-top:2px;">Outbnd</div></div>
+        <div style="background:var(--surface);border-radius:6px;padding:5px 4px;"><div style="font-size:13px;font-weight:800;color:${ahtColor};line-height:1;">${a.aht?fmtTime(a.aht):'—'}</div><div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-4);margin-top:2px;">AHT</div></div>
+      </div>
+      <div style="background:var(--border);border-radius:20px;height:4px;overflow:hidden;"><div style="height:100%;border-radius:20px;background:${color};width:${bar}%;transition:width .6s ease;"></div></div>
+    </div>`;
+  }).join('')||'<div style="padding:8px;color:var(--text-4);font-size:13px;">No agents for this scope.</div>';
+
+  const maxC=Math.max(1,...ranked.map(a=>a.totalCalls));
+  const cd=document.getElementById('ov-calls-dist');
+  if(cd) cd.innerHTML=ranked.map((a,i)=>distBar(a.name,a.totalCalls.toLocaleString(),Math.round(a.totalCalls/maxC*100),COLORS[i%COLORS.length])).join('');
+  const byTalk=[...agg].sort((a,b)=>b.talkTime-a.talkTime);
+  const maxT=Math.max(1,...byTalk.map(a=>a.talkTime));
+  const td=document.getElementById('ov-talk-dist');
+  if(td) td.innerHTML=byTalk.map((a,i)=>distBar(a.name,fmtShort(a.talkTime),Math.round(a.talkTime/maxT*100),COLORS[i%COLORS.length])).join('');
+}
+function distBar(name,valTxt,pct,color){
+  return `<div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:12px;font-weight:600;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;">${name}</span><span style="font-size:12px;font-weight:700;color:var(--text-1);flex-shrink:0;margin-left:8px;">${valTxt}</span></div><div style="background:var(--border);border-radius:20px;height:7px;overflow:hidden;"><div style="height:100%;border-radius:20px;background:${color};width:${pct}%;transition:width .6s ease;"></div></div></div>`;
+}
+
+function buildAgentBarChart(rows){
+  const svg=document.getElementById('agent-bar-chart'); if(!svg) return;
+  if(!rows.length){ svg.removeAttribute('width'); svg.setAttribute('viewBox','0 0 600 260'); svg.innerHTML='<text x="300" y="130" text-anchor="middle" fill="#94a3b8" font-size="12">No data available for this agent</text>'; return; }
+  const H=280,padL=46,padR=56,padT=16,padB=34;
+  const W=Math.max(560,rows.length*68+padL+padR), plotW=W-padL-padR, plotH=H-padT-padB;
+  const maxVal=Math.max(1,...rows.map(r=>Math.max(r.inbound,r.outbound))), niceMax=niceCeil(maxVal);
+  const groupW=plotW/rows.length;
+  const series=[{key:'inbound',color:'#2563eb'},{key:'outbound',color:'#F5871F'}];
+  const barW=Math.min(16,(groupW-8)/series.length);
+  let grid='',bars='',labels='';
+  for(let i=0;i<=4;i++){ const v=niceMax*i/4,y=padT+plotH-(v/niceMax)*plotH; grid+=`<line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#E2E8F0" stroke-dasharray="3,3"/><text x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="#94a3b8">${Math.round(v)}</text>`; }
+  rows.forEach((r,i)=>{ const gx=padL+i*groupW, start=gx+groupW/2-(series.length*barW)/2;
+    series.forEach((s,si)=>{ const val=r[s.key]||0, bh=Math.max((val/niceMax)*plotH,val>0?1:0), bx=start+si*barW, by=padT+plotH-bh; bars+=`<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${(barW-2).toFixed(1)}" height="${bh.toFixed(1)}" fill="${s.color}" rx="2"><title>${r.monthName} — ${COL_LABELS[s.key]}: ${val}</title></rect>`; });
+    labels+=`<text x="${(gx+groupW/2).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10" fill="#64748b">${r.monthName.slice(0,3)} ${r.yearNum}</text>`; });
+  const maxAhtMin=Math.max(...rows.map(r=>r.aht/60),AHT_TARGET_SEC/60), niceAht=niceCeil(maxAhtMin);
+  const pts=rows.map((r,i)=>{ const cx=padL+(i+0.5)*groupW, cy=padT+plotH-((r.aht/60)/niceAht)*plotH; return {cx,cy,aht:r.aht}; });
+  let line='',ldots='';
+  if(pts.length>1) line=`<polyline points="${pts.map(p=>`${p.cx.toFixed(1)},${p.cy.toFixed(1)}`).join(' ')}" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="5,3" stroke-linejoin="round" stroke-linecap="round"/>`;
+  pts.forEach(p=>{ ldots+=`<circle cx="${p.cx.toFixed(1)}" cy="${p.cy.toFixed(1)}" r="4" fill="#f43f5e" stroke="#fff" stroke-width="1.5"><title>AHT: ${fmtTime(p.aht)}</title></circle>`; });
+  let rax='';
+  for(let i=0;i<=4;i++){ const v=niceAht*i/4,y=padT+plotH-(v/niceAht)*plotH; rax+=`<text x="${(W-padR+10).toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="start" font-size="10" fill="#f43f5e">${v.toFixed(0)}m</text>`; }
+  const axes=`<line x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT+plotH}" stroke="#CBD5E1"/><line x1="${padL}" x2="${W-padR}" y1="${padT+plotH}" y2="${padT+plotH}" stroke="#CBD5E1"/><line x1="${W-padR}" x2="${W-padR}" y1="${padT}" y2="${padT+plotH}" stroke="#FDA4AF" stroke-dasharray="3,3"/>`;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width',W); svg.setAttribute('height',H);
+  svg.innerHTML=grid+axes+rax+bars+line+ldots+labels;
+}
+
+function renderAgentTable(rows){
+  const wrap=document.getElementById('agent-table-wrap');
+  if(!rows.length){ wrap.innerHTML='<div style="padding:16px;color:#94a3b8;font-size:13px;font-weight:500;">No data available for this agent yet.</div>'; return; }
+  wrap.innerHTML=`<div style="overflow-x:auto"><table>
+    <thead><tr><th>Month</th><th>Inbound</th><th>Inbound Time</th><th>Outbound</th><th>Total Calls</th><th>Talk Time</th><th>Hold Time</th><th>AHT</th></tr></thead>
+    <tbody>${[...rows].reverse().map(r=>{ const ahtCls=r.aht===0?'':(r.aht<=AHT_TARGET_SEC?'vob-high':r.aht<=AHT_TARGET_SEC*1.25?'vob-mid':'vob-low');
+      return `<tr><td>${r.monthName} ${r.yearNum}</td><td>${r.inbound.toLocaleString()}</td><td>${fmtTime(r.inboundTime)}</td><td>${r.outbound.toLocaleString()}</td><td style="font-weight:700;color:var(--text-1);">${r.totalCalls.toLocaleString()}</td><td>${fmtTime(r.talkTime)}</td><td>${fmtTime(r.holdTime)}</td><td>${r.aht?`<span class="vob-pct ${ahtCls}">${fmtTime(r.aht)}</span>`:'—'}</td></tr>`; }).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderPerfTracker(agentName,rows,cur,monthAgg){
+  set('perf-agent-name',agentName);
+  const totCalls=rows.reduce((s,r)=>s+r.totalCalls,0);
+  const totTalk=rows.reduce((s,r)=>s+r.talkTime,0);
+  const totInbound=rows.reduce((s,r)=>s+r.inbound,0);
+  const ahtW=rows.reduce((s,r)=>s+r.aht*(r.totalCalls||1),0), ahtN=rows.reduce((s,r)=>s+(r.totalCalls||1),0)||1;
+  const avgAht=Math.round(ahtW/ahtN);
+  const months=rows.length;
+  const bestRow=rows.length?[...rows].sort((a,b)=>b.totalCalls-a.totalCalls)[0]:null;
+
+  const kpiCalls=totCalls>=3000?'kpi-good':totCalls>=1000?'':'kpi-warn';
+  const kpiAht=avgAht&&avgAht<=AHT_TARGET_SEC?'kpi-good':avgAht<=AHT_TARGET_SEC*1.25?'kpi-warn':'kpi-bad';
+  document.querySelectorAll('#perf-kpi-grid .perf-kpi').forEach((el,i)=>{ el.className='perf-kpi'; if(i===0&&kpiCalls) el.classList.add(kpiCalls); if(i===3&&kpiAht) el.classList.add(kpiAht); });
+  set('pk-calls',totCalls.toLocaleString()); set('pk-talk',fmtShort(totTalk)); set('pk-inbound',totInbound.toLocaleString());
+  set('pk-aht',avgAht?fmtTime(avgAht):'—');
+  set('pk-bestmonth',bestRow?`${bestRow.totalCalls.toLocaleString()} (${bestRow.monthName} ${bestRow.yearNum})`:'—');
+  set('pk-months',months+' month'+(months!==1?'s':''));
+
+  // Score — self-scaling against the team's all-time bests
+  const allAgg=aggregateByAgent(allData);
+  const maxCalls=Math.max(1,...allAgg.map(a=>a.totalCalls));
+  const maxTalk=Math.max(1,...allAgg.map(a=>a.talkTime));
+  const volScore=Math.min(40,totCalls/maxCalls*40);
+  const talkScore=Math.min(30,totTalk/maxTalk*30);
+  const effScore=avgAht>0?Math.max(0,Math.min(20,(AHT_TARGET_SEC/avgAht)*20)):0;
+  const monthsWithCalls=rows.filter(r=>r.totalCalls>0).length;
+  const consScore=months>0?Math.min(10,monthsWithCalls/months*10):0;
+  const score=Math.round(volScore+talkScore+effScore+consScore);
+  const arc=document.getElementById('perf-ring-arc');
+  if(arc){ arc.style.strokeDashoffset=295.3-(score/100)*295.3; arc.style.stroke=score>=80?'#10b981':score>=60?'#0E8C8C':score>=40?'#f59e0b':'#ef4444'; }
+  set('perf-score-num',score);
+  let grade,gradeClass,gradeEmoji,sub;
+  if(score>=80){grade='S — Elite';gradeClass='grade-s';gradeEmoji='🏆';sub='Outstanding volume and efficiency.';}
+  else if(score>=60){grade='A — Strong';gradeClass='grade-a';gradeEmoji='⭐';sub='Above-average performer. Keep it up!';}
+  else if(score>=40){grade='B — Developing';gradeClass='grade-b';gradeEmoji='📈';sub='Solid base. Push call volume and trim AHT.';}
+  else{grade='C — Needs Growth';gradeClass='grade-c';gradeEmoji='💪';sub='Room to improve. Set weekly call & AHT goals.';}
+  set('perf-score-title',`${gradeEmoji} Performance Score`); set('perf-score-sub',sub);
+  document.getElementById('perf-score-grade').innerHTML=`<div class="perf-score-grade ${gradeClass}">${grade}</div>`;
+
+  const badges=[];
+  if(totCalls>=5000) badges.push({cls:'badge-gold',icon:'🏆',label:'5,000+ Calls'});
+  else if(totCalls>=1000) badges.push({cls:'badge-green',icon:'🏅',label:'1,000+ Calls'});
+  if(avgAht&&avgAht<=AHT_TARGET_SEC) badges.push({cls:'badge-blue',icon:'⚡',label:'AHT On Target'});
+  if(totTalk>=100*3600) badges.push({cls:'badge-purple',icon:'🗣️',label:'100+ Talk Hours'});
+  if(months>=6) badges.push({cls:'badge-blue',icon:'📅',label:'6+ Months Active'});
+  if(monthsWithCalls===months&&months>0) badges.push({cls:'badge-green',icon:'🔥',label:'Active Every Month'});
+  if(bestRow&&bestRow.totalCalls>=1000) badges.push({cls:'badge-gold',icon:'⭐',label:`${bestRow.totalCalls.toLocaleString()} in ${bestRow.monthName}`});
+  if(score>=80) badges.push({cls:'badge-gold',icon:'✨',label:'Elite Performer'});
+  document.getElementById('perf-badges').innerHTML=badges.length?badges.map(b=>`<div class="perf-badge ${b.cls}">${b.icon} ${b.label}</div>`).join(''):'<div class="perf-badge badge-gray">📭 No badges yet — keep going!</div>';
+
+  // Goals (current month)
+  const curCalls=cur?cur.totalCalls:0, curTalk=cur?cur.talkTime:0, curAht=cur?cur.aht:0;
+  setBar('pg-calls-bar','pg-calls-nums',Math.min(100,Math.round(curCalls/AGENT_CALL_GOAL*100)),`${curCalls.toLocaleString()} / ${AGENT_CALL_GOAL.toLocaleString()} calls`);
+  setBar('pg-talk-bar','pg-talk-nums',Math.min(100,Math.round(curTalk/AGENT_TALK_GOAL*100)),`${fmtShort(curTalk)} / ${fmtShort(AGENT_TALK_GOAL)}`);
+  const ahtPct=curAht>0?Math.min(100,Math.round(AHT_TARGET_SEC/curAht*100)):0;
+  setBar('pg-aht-bar','pg-aht-nums',ahtPct,curAht>0?`${fmtTime(curAht)} vs ${fmtTime(AHT_TARGET_SEC)} target`:'No calls this month');
+
+  // You vs team avg (this month)
+  const n=monthAgg.length||1;
+  const avg=k=>Math.round(monthAgg.reduce((s,a)=>s+a[k],0)/n);
+  vsBar('vt-calls-bar','vt-calls-you','vt-calls-avg',curCalls,avg('totalCalls'));
+  vsBar('vt-inbound-bar','vt-inbound-you','vt-inbound-avg',cur?cur.inbound:0,avg('inbound'));
+  vsBar('vt-outbound-bar','vt-outbound-you','vt-outbound-avg',cur?cur.outbound:0,avg('outbound'));
+  const teamAht=avg('aht');
+  const aEl=document.getElementById('vt-aht-bar');
+  document.getElementById('vt-aht-you').textContent=fmtTime(curAht);
+  document.getElementById('vt-aht-avg').textContent=`/ avg ${fmtTime(teamAht)}`;
+  if(aEl){ const better=curAht>0&&curAht<=teamAht; aEl.style.width=(curAht>0?Math.min(100,Math.round(teamAht/Math.max(curAht,1)*100)):0)+'%'; aEl.style.background=better?'#0E8C8C':'#F5871F'; }
+}
+function setBar(barId,numsId,pct,txt){ const b=document.getElementById(barId); if(b) b.style.width=pct+'%'; const n=document.getElementById(numsId); if(n) n.textContent=txt; }
+function vsBar(barId,youId,avgId,you,avg){ const max=Math.max(you,avg,1),pct=Math.round(you/max*100); const b=document.getElementById(barId); if(b){b.style.width=pct+'%';b.style.background=you>=avg?'#0E8C8C':'#F5871F';} const y=document.getElementById(youId); if(y) y.textContent=you.toLocaleString(); const a=document.getElementById(avgId); if(a) a.textContent=`/ avg ${avg.toLocaleString()}`; }
+
+/* ── EFFICIENCY WATCHLIST (AHT vs target) ── */
+const QUARTER_LABELS=['Q1 (Jan–Mar)','Q2 (Apr–Jun)','Q3 (Jul–Sep)','Q4 (Oct–Dec)'];
+let wlMonthSortCol='aht',wlMonthSortDir=1,wlQSortCol='aht',wlQSortDir=1;
+function wlMonthSort(c){ if(wlMonthSortCol===c) wlMonthSortDir*=-1; else{wlMonthSortCol=c;wlMonthSortDir=1;} renderWatchlist(); }
+function wlQSort(c){ if(wlQSortCol===c) wlQSortDir*=-1; else{wlQSortCol=c;wlQSortDir=1;} renderWatchlist(); }
+function monthSortKey(mn,yr){ return parseInt(yr)*12+MONTHS.indexOf(mn); }
+function ahtCellColor(sec){ if(!sec) return 'transparent'; const t=AHT_TARGET_SEC; if(sec<=t){ const ratio=Math.min(1,(t-sec)/t); return `rgba(5,150,105,${(0.15+ratio*0.55).toFixed(2)})`; } const over=Math.min(1,(sec-t)/t); return `rgba(220,38,38,${(0.15+over*0.55).toFixed(2)})`; }
+
+function populateWatchlistFilters(){
+  const mSel=document.getElementById('wl-month-select'), qSel=document.getElementById('wl-quarter-select');
+  if(!mSel||!qSel) return;
+  const pm=mSel.value, pq=qSel.value;
+  const mMap=new Map(), qMap=new Map();
+  allData.forEach(r=>{ const p=r.month.trim().split(' '); const mn=p[0],yr=p[1]; if(!mn||!yr) return; mMap.set(`${mn}|${yr}`,{mn,yr,sort:monthSortKey(mn,yr)}); const qi=Math.floor(MONTHS.indexOf(mn)/3); qMap.set(`${qi}|${yr}`,{qi,yr,sort:parseInt(yr)*4+qi}); });
+  const mList=[...mMap.values()].sort((a,b)=>a.sort-b.sort), qList=[...qMap.values()].sort((a,b)=>a.sort-b.sort);
+  if(!mList.length) return;
+  mSel.innerHTML=mList.map(m=>`<option value="${m.mn}|${m.yr}">${m.mn} ${m.yr}</option>`).join('');
+  qSel.innerHTML=qList.map(q=>`<option value="${q.qi}|${q.yr}">${QUARTER_LABELS[q.qi]} ${q.yr}</option>`).join('');
+  const mVals=mList.map(m=>`${m.mn}|${m.yr}`), qVals=qList.map(q=>`${q.qi}|${q.yr}`);
+  const curKey=`${currentMonth}|${currentYear}`, curQKey=`${Math.floor(MONTHS.indexOf(currentMonth)/3)}|${currentYear}`;
+  mSel.value=mVals.includes(pm)?pm:(mVals.includes(curKey)?curKey:mVals[mVals.length-1]);
+  qSel.value=qVals.includes(pq)?pq:(qVals.includes(curQKey)?curQKey:qVals[qVals.length-1]);
+}
+
+function agentsForMonthKey(mn,yr){ return aggregateByAgent(allData.filter(r=>{const p=r.month.trim().split(' ');return p[0]===mn&&p[1]===yr;})); }
+function agentsForQuarter(qi,yr){ const mset=new Set([MONTHS[qi*3],MONTHS[qi*3+1],MONTHS[qi*3+2]]); return aggregateByAgent(allData.filter(r=>{const p=r.month.trim().split(' ');return mset.has(p[0])&&p[1]===yr;})); }
+
+function renderWatchlist(){
+  if(!allData.length) return;
+  const mSel=document.getElementById('wl-month-select'), qSel=document.getElementById('wl-quarter-select');
+  if(!mSel.value||!qSel.value) populateWatchlistFilters();
+  const [mn,myr]=(mSel.value||'|').split('|');
+  const [qi,qyr]=(qSel.value||'|').split('|');
+  const monthAgents=agentsForMonthKey(mn,myr);
+  const quarterAgents=agentsForQuarter(parseInt(qi),qyr);
+  const monthOver=monthAgents.filter(a=>a.totalCalls>0&&a.aht>AHT_TARGET_SEC);
+  const quarterOver=quarterAgents.filter(a=>a.totalCalls>0&&a.aht>AHT_TARGET_SEC);
+  const qOverNames=new Set(quarterOver.map(a=>a.name));
+  const coaching=monthOver.filter(a=>qOverNames.has(a.name));
+  set('wl-month-flagged-count',monthOver.length); set('wl-month-flagged-sub',`of ${monthAgents.filter(a=>a.totalCalls>0).length} agents · ${mn} ${myr}`);
+  set('wl-quarter-flagged-count',quarterOver.length); set('wl-quarter-flagged-sub',`of ${quarterAgents.filter(a=>a.totalCalls>0).length} agents · ${QUARTER_LABELS[parseInt(qi)]||''} ${qyr}`);
+  set('wl-flagged-count',coaching.length); set('wl-flagged-sub',coaching.length?coaching.map(a=>a.name.split(' ')[0]).join(', '):'None — nice!');
+  set('wl-month-period',`${mn} ${myr}`); set('wl-quarter-period',`${QUARTER_LABELS[parseInt(qi)]||''} ${qyr}`);
+
+  renderWlTable('watchlist-monthly-wrap',monthAgents,'wl-month-show-all',wlMonthSortCol,wlMonthSortDir,'wlMonthSort',qOverNames);
+  renderWlTable('watchlist-quarterly-wrap',quarterAgents,'wl-quarter-show-all',wlQSortCol,wlQSortDir,'wlQSort',null);
+  document.getElementById('wl-month-legend').style.display='flex';
+  document.getElementById('wl-quarter-legend').style.display='flex';
+}
+function renderWlTable(wrapId,agents,showAllId,sc,sd,sortFn,coachSet){
+  const wrap=document.getElementById(wrapId); if(!wrap) return;
+  const showAll=document.getElementById(showAllId)?.checked;
+  let rows=agents.filter(a=>a.totalCalls>0);
+  if(!showAll) rows=rows.filter(a=>a.aht>AHT_TARGET_SEC);
+  if(!rows.length){ wrap.innerHTML='<div style="padding:16px;color:var(--text-4);font-size:13px;font-weight:500;">'+(agents.length?'No agents over target for this period. 🎉':'No data for this period.')+'</div>'; return; }
+  rows=[...rows].sort((a,b)=>{ const av=a[sc],bv=b[sc]; if(typeof av==='string') return sd*String(av).localeCompare(String(bv)); return sd*(bv-av); });
+  const th=(k,l)=>`<th class="sortable${sc===k?' sorted':''}" onclick="${sortFn}('${k}')">${l}${sc===k?(sd===1?' ↓':' ↑'):''}</th>`;
+  wrap.innerHTML=`<div style="overflow-x:auto"><table><thead><tr>
+    ${th('name','Agent')}${th('totalCalls','Calls')}${th('inbound','Inbound')}${th('outbound','Outbound')}${th('talkTime','Talk')}${th('holdTime','Hold')}${th('aht','AHT')}<th>Status</th>
+  </tr></thead><tbody>${rows.map((a,i)=>{ const over=a.aht>AHT_TARGET_SEC; const coach=coachSet&&coachSet.has(a.name)&&over;
+    return `<tr><td><div style="display:flex;align-items:center;gap:10px;">${avatarHTML(a.name,28,COLORS[i%COLORS.length])}<span style="font-weight:600;color:var(--text-1);cursor:pointer;" onclick="jumpToAgent('${a.name.replace(/'/g,"\\'")}')">${a.name}</span></div></td>
+    <td>${a.totalCalls.toLocaleString()}</td><td>${a.inbound.toLocaleString()}</td><td>${a.outbound.toLocaleString()}</td><td>${fmtTime(a.talkTime)}</td><td>${fmtTime(a.holdTime)}</td>
+    <td style="text-align:center;"><span style="display:inline-block;padding:3px 9px;border-radius:6px;font-weight:800;color:${over?'#DC2626':'#059669'};background:${ahtCellColor(a.aht)};">${fmtTime(a.aht)}</span></td>
+    <td>${coach?'<span class="admit-badge" style="background:var(--rose-lt);color:var(--rose);">🚩 Coaching</span>':over?'<span class="admit-badge" style="background:var(--amber-lt);color:var(--amber);">Over</span>':'<span class="admit-badge">On target</span>'}</td></tr>`; }).join('')}</tbody></table></div>`;
+}
+
+/* ── EXPORT CSV ── */
+function openExportModal(){
+  const mSel=document.getElementById('export-month'), aSel=document.getElementById('export-agent');
+  const seen=new Set(),entries=[];
+  allData.forEach(d=>{ const p=d.month.trim().split(' '); const mn=p[0]||'',yr=parseInt(p[1])||0,key=mn+' '+yr; if(mn&&yr&&!seen.has(key)){seen.add(key);entries.push({key,mn,yr,idx:MONTHS.indexOf(mn)});} });
+  entries.sort((a,b)=>(a.yr-b.yr)||(a.idx-b.idx));
+  mSel.innerHTML='<option value="all">All months</option>'+entries.map(e=>`<option value="${e.key}">${e.key}</option>`).join('');
+  const curKey=currentMonth+' '+currentYear; mSel.value=seen.has(curKey)?curKey:'all';
+  const agents=[...new Set(allData.map(d=>d.name))].sort();
+  aSel.innerHTML='<option value="all">All agents</option>'+agents.map(a=>`<option value="${a}">${a}</option>`).join('');
+  const curA=document.getElementById('filter-agent')?.value; aSel.value=(curA&&curA!=='all'&&agents.includes(curA))?curA:'all';
+  document.getElementById('export-modal-overlay').style.display='flex';
+}
+function closeExportModal(){ document.getElementById('export-modal-overlay').style.display='none'; }
+function csvEscape(v){ const s=String(v==null?'':v); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+function doExportCSV(){
+  const mc=document.getElementById('export-month').value, ac=document.getElementById('export-agent').value;
+  let rows=allData.slice();
+  if(mc!=='all') rows=rows.filter(r=>r.month.trim()===mc);
+  if(ac!=='all') rows=rows.filter(r=>r.name===ac);
+  rows=rows.map(r=>{ const p=r.month.trim().split(' '); return {...r,mn:p[0]||'',yr:parseInt(p[1])||0,idx:MONTHS.indexOf(p[0])}; }).sort((a,b)=>(a.yr-b.yr)||(a.idx-b.idx)||a.name.localeCompare(b.name));
+  const header=['Month','Agent','Inbound Calls','Inbound Time','Outbound Calls','Talk Time','Hold Time','AHT'];
+  const lines=[header.map(csvEscape).join(',')];
+  rows.forEach(r=>lines.push([r.month,r.name,r.inbound,fmtTime(r.inboundTime),r.outbound,fmtTime(r.talkTime),fmtTime(r.holdTime),fmtTime(r.aht)].map(csvEscape).join(',')));
+  if(!rows.length) lines.push('No data found for the selected month/agent.');
+  const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url; a.download=`Banyan_Agent_Stats_${(mc==='all'?'AllMonths':mc.replace(' ','_'))}_${(ac==='all'?'AllAgents':ac.replace(/\s+/g,'_'))}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); closeExportModal();
+}
+
+/* ── THEME ── */
+(function initTheme(){ const saved=localStorage.getItem('banyan-dashboard-theme'); const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(saved||(prefersDark?'dark':'light')); })();
+function applyTheme(theme){ const html=document.documentElement,icon=document.getElementById('theme-icon'); if(theme==='dark'){html.setAttribute('data-theme','dark'); if(icon)icon.textContent='🌙';} else {html.removeAttribute('data-theme'); if(icon)icon.textContent='☀️';} localStorage.setItem('banyan-dashboard-theme',theme); }
+function toggleTheme(){ applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'); }
+document.addEventListener('click',function(e){ const box=document.getElementById('score-tooltip-box'); if(box&&!e.target.closest('.score-info-wrap')) box.classList.remove('score-tip-visible'); });
+
+/* ── INIT ── */
+loadData();
+setInterval(function(){ loadData(true); },60000);
+</script>
+</body>
+</html>
