@@ -1891,6 +1891,8 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--brand); ou
    ═══════════════════════════════════════════════════════════════════ */
 const SHEET_ID   = '1eNbfj5k0BLXa5fpU41wbuquWUYdLb-S7KFOjOLP3xZo';
 const SHEET_NAME = 'Consolidated';
+/* "Latest Update" reflects the date of the last entry logged on this tab. */
+const CALL_REPORT_SHEET_NAME = 'Call Report';
 
 /* ── Tunable targets / goals (adjust to Banyan's standards) ── */
 const AHT_TARGET_SEC     = 6 * 60;      // AHT goal: 6:00. At/under = healthy (green)
@@ -1969,6 +1971,54 @@ function parseCSV(text){
   }
   if(cur!==''||row.length){ row.push(cur); rows.push(row); }
   return rows;
+}
+
+/* ── DATE PARSING (tolerant of the formats a Sheets CSV feed can emit) ── */
+function parseSheetDate(v){
+  if(v==null) return null;
+  const s=String(v).trim();
+  if(!s) return null;
+  // gviz sometimes serialises a date cell as: Date(2026,6,24[,h,m,s])  (month is 0-based)
+  let m=s.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
+  if(m){ const d=new Date(+m[1],+m[2],+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0)); return isNaN(d)?null:d; }
+  // ISO: yyyy-mm-dd
+  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m){ const d=new Date(+m[1],+m[2]-1,+m[3]); return isNaN(d)?null:d; }
+  // m/d/yyyy or d/m/yyyy (assume month first; swap if impossible)
+  m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){ let a=+m[1],b=+m[2],y=+m[3]; if(y<100) y+=2000; let mo=a,da=b; if(a>12&&b<=12){mo=b;da=a;} const d=new Date(y,mo-1,da); return isNaN(d)?null:d; }
+  const d=new Date(s); return isNaN(d)?null:d;
+}
+
+/* Read the "Call Report" tab and show the date of its most recent entry
+   in the "Latest Update" chip. Falls back silently if the tab can't be read. */
+async function loadLatestUpdate(){
+  const el=document.getElementById('info-latest');
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(CALL_REPORT_SHEET_NAME)}`;
+  try{
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=parseCSV(await res.text()).filter(r=>r.some(c=>String(c).trim()!==''));
+    if(rows.length<2) return;                    // header only / empty
+    const body=rows.slice(1);
+    // Locate the date column: prefer a header containing "date", else auto-detect.
+    const header=rows[0].map(h=>String(h).trim().toLowerCase());
+    let dateCol=header.findIndex(h=>h.includes('date'));
+    if(dateCol<0){
+      const ncols=Math.max(...body.map(r=>r.length));
+      let best=-1,bestCount=0;
+      for(let c=0;c<ncols;c++){
+        let cnt=0; for(const r of body){ if(parseSheetDate(r[c])) cnt++; }
+        if(cnt>bestCount){ bestCount=cnt; best=c; }
+      }
+      dateCol=best;
+    }
+    if(dateCol<0) return;
+    // "Last entry" = the bottom-most row that carries a valid date in that column.
+    let last=null;
+    for(let i=body.length-1;i>=0;i--){ const d=parseSheetDate(body[i][dateCol]); if(d){ last=d; break; } }
+    if(last) el.textContent=last.toLocaleDateString();
+  }catch(e){ /* keep whatever is currently shown */ }
 }
 
 const _now=new Date();
@@ -2100,7 +2150,8 @@ async function loadData(silent=false){
     sel.value=agents.includes(prev)?prev:'all';
     const now=new Date();
     _firstLoad=false;
-    document.getElementById('info-latest').textContent=now.toLocaleDateString();
+    // "Latest Update" = date of the last entry on the "Call Report" tab (not today).
+    loadLatestUpdate();
     document.getElementById('info-synced').textContent=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     _anim=!silent;
     renderAll(!silent);
