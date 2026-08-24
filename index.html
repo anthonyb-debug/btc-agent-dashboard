@@ -1991,32 +1991,35 @@ function parseSheetDate(v){
 }
 
 /* Read the "Call Report" tab and show the date of its most recent entry
-   in the "Latest Update" chip. Falls back silently if the tab can't be read. */
+   in the "Latest Update" chip. Uses the gviz JSON feed (not CSV): JSON carries
+   the true underlying date value as Date(y,m,d), so it isn't affected by the
+   sheet's display format the way the CSV feed is. Falls back silently. */
 async function loadLatestUpdate(){
   const el=document.getElementById('info-latest');
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(CALL_REPORT_SHEET_NAME)}`;
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CALL_REPORT_SHEET_NAME)}`;
   try{
     const res=await fetch(url);
     if(!res.ok) throw new Error('HTTP '+res.status);
-    const rows=parseCSV(await res.text()).filter(r=>r.some(c=>String(c).trim()!==''));
-    if(rows.length<2) return;                    // header only / empty
-    const body=rows.slice(1);
-    // Locate the date column: prefer a header containing "date", else auto-detect.
-    const header=rows[0].map(h=>String(h).trim().toLowerCase());
-    let dateCol=header.findIndex(h=>h.includes('date'));
-    if(dateCol<0){
-      const ncols=Math.max(...body.map(r=>r.length));
-      let best=-1,bestCount=0;
-      for(let c=0;c<ncols;c++){
-        let cnt=0; for(const r of body){ if(parseSheetDate(r[c])) cnt++; }
-        if(cnt>bestCount){ bestCount=cnt; best=c; }
-      }
-      dateCol=best;
-    }
+    const text=await res.text();
+    // gviz wraps the JSON: /*O_o*/ google.visualization.Query.setResponse( {...} );
+    const s=text.indexOf('{'), e=text.lastIndexOf('}');
+    if(s<0||e<0) throw new Error('unexpected feed format');
+    const data=JSON.parse(text.slice(s,e+1));
+    const cols=(data.table&&data.table.cols)||[];
+    const rows=(data.table&&data.table.rows)||[];
+    if(!rows.length) return;
+    // Locate the date column: prefer a real date/datetime-typed column,
+    // else a header containing "date".
+    let dateCol=cols.findIndex(c=>c&&(c.type==='date'||c.type==='datetime'));
+    if(dateCol<0) dateCol=cols.findIndex(c=>c&&String(c.label||'').toLowerCase().includes('date'));
     if(dateCol<0) return;
-    // "Last entry" = the bottom-most row that carries a valid date in that column.
+    // "Last entry" = the bottom-most row carrying a valid date in that column.
     let last=null;
-    for(let i=body.length-1;i>=0;i--){ const d=parseSheetDate(body[i][dateCol]); if(d){ last=d; break; } }
+    for(let i=rows.length-1;i>=0;i--){
+      const cell=rows[i]&&rows[i].c&&rows[i].c[dateCol];
+      const d=cell?parseSheetDate(cell.v):null;
+      if(d){ last=d; break; }
+    }
     if(last) el.textContent=last.toLocaleDateString();
   }catch(e){ /* keep whatever is currently shown */ }
 }
