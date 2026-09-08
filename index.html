@@ -1957,6 +1957,24 @@ function normShift(v){
   if(s.includes('pm')||s.includes('mid')||s.includes('night')||s.includes('eve')||s.includes('grave')) return 'PM';
   return '';
 }
+/* Column A → "FullMonth YYYY". The sheet may store just an abbreviation
+   ("Jul") or full name, with or without a year. A missing year defaults to
+   the current calendar year; an explicit 4-digit year in the cell is kept. */
+const _MONTH_ABBR = {jan:'January',feb:'February',mar:'March',apr:'April',may:'May',jun:'June',jul:'July',aug:'August',sep:'September',sept:'September',oct:'October',nov:'November',dec:'December'};
+function normMonth(v){
+  let s=String(v||'').trim();
+  if(!s) return '';
+  const ym=s.match(/(?:19|20)\d{2}/);                 // explicit year if present
+  const year=ym?ym[0]:String(new Date().getFullYear());
+  const wordMatch=s.match(/[A-Za-z]+/);               // first word = month name/abbr
+  let mon='';
+  if(wordMatch){
+    const w=wordMatch[0].toLowerCase();
+    if(_MONTH_ABBR[w]) mon=_MONTH_ABBR[w];
+    else { const full=MONTHS.find(m=>m.toLowerCase()===w); if(full) mon=full; }
+  }
+  return mon?`${mon} ${year}`:s;                      // fall back to original if unrecognised
+}
 
 /* ── CSV parser (handles quoted fields, commas, newlines) ── */
 function parseCSV(text){
@@ -2137,13 +2155,19 @@ async function loadData(silent=false){
     const text=await res.text();
     const rows=parseCSV(text).filter(r=>r.some(c=>String(c).trim()!==''));
     allData=rows.slice(1).filter(r=>(r[0]&&r[0].trim())||(r[1]&&r[1].trim())).map(r=>{
+      // Sheet layout: A Month · B Username · C Inbound calls · D Inbound time
+      //               E Outbound calls · F Talk time · G Hold time · H Shift
       const inbound=parseNum(r[2]), outbound=parseNum(r[4]);
+      const talkTime=parseTime(r[5]), holdTime=parseTime(r[6]);
+      const totalCalls=inbound+outbound;
+      // No AHT column in the sheet → derive it: (talk + hold) / total calls.
+      const aht=totalCalls>0?Math.round((talkTime+holdTime)/totalCalls):0;
       return {
-        month:(r[0]||'').trim(), name:(r[1]||'').trim(),
+        month:normMonth(r[0]), name:(r[1]||'').trim(),
         inbound, inboundTime:parseTime(r[3]), outbound,
-        talkTime:parseTime(r[5]), holdTime:parseTime(r[6]), aht:parseTime(r[7]),
-        shift:normShift(r[8]),
-        totalCalls:inbound+outbound
+        talkTime, holdTime, aht,
+        shift:normShift(r[7]),
+        totalCalls
       };
     }).filter(r=>r.name);
     const agents=[...new Set(allData.map(d=>d.name))].sort();
