@@ -2357,7 +2357,7 @@ table tbody tr:hover td.heat { box-shadow: inset 0 2px 0 var(--text-1), inset 0 
       <div class="highlight-grid">
         <div class="highlight-card"><div class="hc-eyebrow"><svg class="i" style="color:var(--m-inbound)"><use href="#i-phone-in"/></svg>Most inbound calls</div><div class="hc-name" id="top-inbound-name">—</div><div class="hc-sub" id="top-inbound-sub">—</div></div>
         <div class="highlight-card"><div class="hc-eyebrow"><svg class="i" style="color:var(--m-outbound)"><use href="#i-phone-out"/></svg>Most outbound calls</div><div class="hc-name" id="top-outbound-name">—</div><div class="hc-sub" id="top-outbound-sub">—</div></div>
-        <div class="highlight-card"><div class="hc-eyebrow"><svg class="i" style="color:var(--ok)"><use href="#i-target"/></svg>Closest to handle-time target</div><div class="hc-name" id="top-aht-name">—</div><div class="hc-sub" id="top-aht-sub">—</div></div>
+        <div class="highlight-card"><div class="hc-eyebrow"><svg class="i" style="color:var(--ok)"><use href="#i-clock"/></svg>Lowest handle time</div><div class="hc-name" id="top-aht-name">—</div><div class="hc-sub" id="top-aht-sub">—</div></div>
       </div>
 
       <section class="leaderboard-card" id="leaderboard" aria-labelledby="lb-heading">
@@ -3027,12 +3027,10 @@ function syncCardPressed(){
 }
 
 /* ── TOP PERFORMERS ── */
-// Closest to the target from at-or-under first (being over is worse); only if nobody is under, closest overall
-function closestToTarget(agg){
-  const pool=eligibleForRates(agg);
-  const under=pool.filter(a=>a.aht<=AHT_TARGET_SEC);
-  const list=under.length?under:pool;
-  return [...list].sort((a,b)=>(Math.abs(a.aht-AHT_TARGET_SEC)-Math.abs(b.aht-AHT_TARGET_SEC))||(b.totalCalls-a.totalCalls))[0];
+// Lowest handle time wins (lower is better). Only agents with at least half the
+// team's median call volume qualify, so a handful of short calls can't take it.
+function lowestAht(agg){
+  return [...eligibleForRates(agg)].sort((a,b)=>(a.aht-b.aht)||(b.totalCalls-a.totalCalls))[0];
 }
 function targetGapText(aht){
   const d=aht-AHT_TARGET_SEC;
@@ -3043,7 +3041,7 @@ function renderTopPerformers(){
   const agg=aggregateByAgent(scopedRows());
   const byInb=[...agg].sort((a,b)=>b.inbound-a.inbound)[0];
   const byOut=[...agg].sort((a,b)=>b.outbound-a.outbound)[0];
-  const best=closestToTarget(agg);
+  const best=lowestAht(agg);
   set('top-inbound-name',byInb?byInb.name:'—'); set('top-inbound-sub',byInb?`${byInb.inbound.toLocaleString()} inbound calls`:'No data');
   set('top-outbound-name',byOut?byOut.name:'—'); set('top-outbound-sub',byOut?`${byOut.outbound.toLocaleString()} outbound calls`:'No data');
   set('top-aht-name',best?best.name:'—'); set('top-aht-sub',best?`${fmtMS(best.aht)}, ${targetGapText(best.aht)}`:'No data');
@@ -3263,8 +3261,8 @@ function renderInsights(){
     cur.forEach(r=>{ const p=prev.find(x=>x.name===r.name); if(p){ const g=r.totalCalls-p.totalCalls; if(g>bv){bv=g;bestGain=r;} } });
     if(bestGain&&bv>0) chips.push({cls:'highlight',icon:'trend-up',val:bestGain.name,label:`most improved: +${bv.toLocaleString()} calls vs ${pv.name}`});
   }
-  const best=closestToTarget(cur);
-  if(best) chips.push({cls:'good',icon:'target',val:best.name,label:`closest to handle-time target ${inM}: ${fmtMS(best.aht)}`});
+  const best=lowestAht(cur);
+  if(best) chips.push({cls:'good',icon:'clock',val:best.name,label:`lowest handle time ${inM}: ${fmtMS(best.aht)}`});
   const holdPer=eligibleForRates(cur).map(a=>({...a,hpc:a.holdTime/a.totalCalls})).sort((a,b)=>a.hpc-b.hpc)[0];
   if(holdPer) chips.push({cls:'highlight',icon:'pause',val:holdPer.name,label:`least hold time per call ${inM} (${fmtMS(holdPer.hpc)} a call)`});
   const withCalls=cur.filter(a=>a.totalCalls>0);
