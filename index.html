@@ -2583,27 +2583,30 @@ table tbody tr:hover td.heat { box-shadow: inset 0 2px 0 var(--text-1), inset 0 
       "Anyone with the link" → Viewer.
    2. From the sheet URL, copy the long ID between /d/ and /edit:
         https://docs.google.com/spreadsheets/d/THIS_IS_THE_ID/edit#gid=0
-   3. Paste that ID into SHEET_ID below, and put the tab (sheet) name
-      into SHEET_NAME (the little tab label at the bottom, e.g. "Sheet1").
+   3. Paste that ID into SHEET_ID below.
 
-   Expected columns, left to right (row 1 = headers, data starts row 2):
-     A: Month          (e.g. "July 2026")
-     B: Agent          (agent name)
-     C: Inbound calls  (number)
-     D: Inbound time   (h:mm:ss, mm:ss, or seconds)
-     E: Outbound calls (number)
-     F: Talk time      (h:mm:ss, mm:ss, or seconds)
-     G: Hold time      (h:mm:ss, mm:ss, or seconds)
-     H: Shift          (AM / PM, Morning / Midnight)
-   AHT is calculated as (talk + hold) / (inbound + outbound).
+   CALLS come from the "Daily Call Report" tab: one row per agent per day,
+   row 1 = headers. The columns read are set in DAILY_COLS (column letters):
+     A  Date             AR Inbound calls       AS Outbound calls
+     C  User name        AT Inbound minutes     AU Outbound minutes
+                         AV Talk time           AX Hold time
+                         AY AHT  (read as is, not calculated)
+   Times can be h:mm:ss or seconds. The daily rows are added up into one
+   row per agent per month. For a month (or all time, or the team), AHT is
+   the daily AHT values averaged by calls: Σ(AHT × calls) ÷ Σ calls.
+   If AY is blank for a day that has calls, that day is left out of AHT.
 
-   No API key needed — the dashboard reads the sheet's public CSV feed
+   SHIFTS come from the "Consolidated" tab: A Month, B Agent, H Shift
+   (AM / PM, Morning / Midnight, or a start time such as "9AM – 6PM").
+
+   No API key needed — the dashboard reads the sheet's public feed
    and auto-refreshes every 60 seconds.
    ═══════════════════════════════════════════════════════════════════ */
 const SHEET_ID   = '1Fhstp9OQUVwp1zUGuUjkPNIrXqNT9YNW-_ORk237HbM';
-const SHEET_NAME = 'Consolidated';
-/* "Latest Update" reflects the date of the last entry logged on this tab. */
-const CALL_REPORT_SHEET_NAME = 'Call Report';
+const DAILY_SHEET_NAME = 'Daily Call Report';
+const DAILY_COLS = { date:'A', name:'C', inbound:'AR', outbound:'AS', inboundTime:'AT', outboundTime:'AU', talkTime:'AV', holdTime:'AX', aht:'AY' };
+const SHIFT_SHEET_NAME = 'Consolidated';                 // set to '' to turn shifts off
+const SHIFT_COLS = { month:'A', name:'B', shift:'H' };
 
 /* ── Tunable targets / goals (adjust to Banyan's standards) ── */
 const AHT_TARGET_SEC     = 2 * 60;      // AHT goal: 2:00. At/under = healthy (green)
@@ -2665,6 +2668,10 @@ function parseNum(v){ return parseInt(String(v||'0').replace(/[, ]/g,''))||0; }
 function normShift(v){
   const s=String(v||'').trim().toLowerCase();
   if(!s) return '';
+  // A shift written as times ("9AM – 6PM", "12AM-9AM"): go by the start time.
+  // Starts from 6AM up to 6PM = AM (day) shift; otherwise PM (night) shift.
+  const t=s.replace(/\s+/g,'').match(/^(\d{1,2})(?::\d{2})?(am|pm)/);
+  if(t){ const h=(+t[1]%12)+(t[2]==='pm'?12:0); return h>=6&&h<18?'AM':'PM'; }
   if(s.includes('am')||s.includes('morning')||s.includes('day')) return 'AM';
   if(s.includes('pm')||s.includes('mid')||s.includes('night')||s.includes('eve')||s.includes('grave')) return 'PM';
   return '';
@@ -2723,38 +2730,54 @@ function parseSheetDate(v){
   const d=new Date(s); return isNaN(d)?null:d;
 }
 
-/* Read the "Call Report" tab and show the date of its most recent entry
-   in the "Latest Update" chip. Uses the gviz JSON feed (not CSV): JSON carries
-   the true underlying date value as Date(y,m,d), so it isn't affected by the
-   sheet's display format the way the CSV feed is. Falls back silently. */
-async function loadLatestUpdate(){
-  const el=document.getElementById('info-latest');
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CALL_REPORT_SHEET_NAME)}`;
-  try{
-    const res=await fetch(url);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    // gviz wraps the JSON: /*O_o*/ google.visualization.Query.setResponse( {...} );
-    const s=text.indexOf('{'), e=text.lastIndexOf('}');
-    if(s<0||e<0) throw new Error('unexpected feed format');
-    const data=JSON.parse(text.slice(s,e+1));
-    const cols=(data.table&&data.table.cols)||[];
-    const rows=(data.table&&data.table.rows)||[];
-    if(!rows.length) return;
-    // Locate the date column: prefer a real date/datetime-typed column,
-    // else a header containing "date".
-    let dateCol=cols.findIndex(c=>c&&(c.type==='date'||c.type==='datetime'));
-    if(dateCol<0) dateCol=cols.findIndex(c=>c&&String(c.label||'').toLowerCase().includes('date'));
-    if(dateCol<0) return;
-    // "Last entry" = the bottom-most row carrying a valid date in that column.
-    let last=null;
-    for(let i=rows.length-1;i>=0;i--){
-      const cell=rows[i]&&rows[i].c&&rows[i].c[dateCol];
-      const d=cell?parseSheetDate(cell.v):null;
-      if(d){ last=d; break; }
-    }
-    if(last) el.textContent=last.toLocaleDateString([],{month:'short',day:'numeric'});
-  }catch(e){ /* keep whatever is currently shown */ }
+/* ── GVIZ JSON FEED ──
+   JSON (not CSV) keeps each cell's real value: dates come as Date(y,m,d) and
+   durations keep their h:mm:ss text, whatever the sheet's display format, and
+   mixed-type columns don't blank out cells the way the CSV feed can. */
+async function fetchGviz(sheet, query){
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&sheet=${encodeURIComponent(sheet)}&tq=${encodeURIComponent(query)}`;
+  const res=await fetch(url);
+  if(!res.ok) throw new Error(`the "${sheet}" tab returned ${res.status}. Check the sheet is shared as "Anyone with the link can view"`);
+  const text=await res.text();
+  const i=text.indexOf('{'), j=text.lastIndexOf('}');
+  let data=null; try{ data=JSON.parse(text.slice(i,j+1)); }catch(e){}
+  if(!data) throw new Error(`the "${sheet}" tab couldn't be read. Check the sheet is shared as "Anyone with the link can view"`);
+  if(data.status==='error'){ const er=(data.errors&&data.errors[0])||{}; throw new Error(`the "${sheet}" tab couldn't be read (${er.detailed_message||er.message||'query error'}). Check the tab name and the column letters in the configuration`); }
+  return (data.table&&data.table.rows)||[];
+}
+// Duration cell → seconds. Handles h:mm:ss text, plain seconds, [h,m,s] and Date(1899,11,30,h,m,s).
+function cellSecs(c){
+  if(!c) return 0;
+  if(typeof c.f==='string'&&c.f.includes(':')) return parseTime(c.f);
+  const v=c.v; if(v==null||v==='') return 0;
+  if(Array.isArray(v)) return (v[0]||0)*3600+(v[1]||0)*60+(v[2]||0);
+  if(typeof v==='number') return v>0&&v<1&&!Number.isInteger(v)?Math.round(v*86400):Math.round(v);
+  const m=String(v).match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
+  if(m){ const days=Math.round((Date.UTC(+m[1],+m[2],+m[3])-Date.UTC(1899,11,30))/86400000); return days*86400+(+m[4]||0)*3600+(+m[5]||0)*60+(+m[6]||0); }
+  return parseTime(v);
+}
+const cellNum=c=>!c||c.v==null?0:(typeof c.v==='number'?Math.round(c.v):parseNum(c.v));
+const cellText=c=>c&&c.v!=null?String(typeof c.v==='string'?c.v:(c.f!=null?c.f:c.v)).trim():'';
+function cellDate(c){
+  if(!c) return null;
+  let d=parseSheetDate(c.v)||parseSheetDate(c.f);
+  // A date typed without a year ("Jan 11") parses to 2001: use the most recent past occurrence instead
+  if(d&&d.getFullYear()<2015){ const now=new Date(); d=new Date(now.getFullYear(),d.getMonth(),d.getDate()); if(d>now) d.setFullYear(d.getFullYear()-1); }
+  return d;
+}
+// Match a name from the Consolidated tab ("Lim, Dyan" or "Dyan Lim") to a Daily Call Report name
+const _nameTokens=s=>String(s||'').toLowerCase().replace(/[^a-z\s'-]/g,' ').split(/[\s-]+/).filter(Boolean);
+function matchAgentName(raw,known){
+  raw=String(raw||'').trim(); if(known.includes(raw)) return raw;
+  let last,given;
+  if(raw.includes(',')){ const i=raw.indexOf(','); last=raw.slice(0,i); given=raw.slice(i+1); }
+  else { const p=raw.split(/\s+/); last=p.pop()||''; given=p.join(' '); }
+  const lastT=_nameTokens(last), givenT=_nameTokens(given);
+  const cands=known.filter(k=>lastT.length&&lastT.every(x=>_nameTokens(k).includes(x)));
+  const byGiven=cands.filter(k=>_nameTokens(k).some(x=>givenT.includes(x)));
+  if(byGiven.length===1) return byGiven[0];
+  if(!byGiven.length&&cands.length===1) return cands[0];
+  return raw;
 }
 
 const _now=new Date();
@@ -2879,23 +2902,44 @@ async function loadData(silent=false){
     if(refreshBtn) refreshBtn.classList.remove('is-loading');
     return;
   }
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
   try{
-    const res=await fetch(url);
-    if(!res.ok) throw new Error(`the sheet returned ${res.status}. Check it's shared as "Anyone with the link can view"`);
-    const text=await res.text();
-    const rows=parseCSV(text).filter(r=>r.some(c=>String(c).trim()!==''));
-    allData=rows.slice(1).filter(r=>(r[0]&&r[0].trim())||(r[1]&&r[1].trim())).map(r=>{
-      // Sheet layout: A Month · B Username · C Inbound calls · D Inbound time
-      //               E Outbound calls · F Talk time · G Hold time · H Shift
-      const inbound=parseNum(r[2]), outbound=parseNum(r[4]);
-      const talkTime=parseTime(r[5]), holdTime=parseTime(r[6]);
-      const totalCalls=inbound+outbound;
-      // No AHT column in the sheet → derive it: (talk + hold) / total calls.
-      const aht=totalCalls>0?Math.round((talkTime+holdTime)/totalCalls):0;
-      return { month:normMonth(r[0]), name:(r[1]||'').trim(), inbound, inboundTime:parseTime(r[3]), outbound,
-        talkTime, holdTime, aht, shift:normShift(r[7]), totalCalls };
-    }).filter(r=>r.name);
+    const C=DAILY_COLS, order=['date','name','inbound','outbound','inboundTime','outboundTime','talkTime','holdTime','aht'];
+    const [daily, shiftRows]=await Promise.all([
+      fetchGviz(DAILY_SHEET_NAME, `select ${order.map(k=>C[k]).join(', ')} where ${C.name} is not null`),
+      SHIFT_SHEET_NAME ? fetchGviz(SHIFT_SHEET_NAME, `select ${SHIFT_COLS.month}, ${SHIFT_COLS.name}, ${SHIFT_COLS.shift} where ${SHIFT_COLS.name} is not null`).catch(()=>null) : Promise.resolve(null)
+    ]);
+    // 1. daily rows from the Daily Call Report tab
+    const days=[]; let latest=null;
+    daily.forEach(r=>{
+      const c=r.c||[], d=cellDate(c[0]), name=cellText(c[1]);
+      if(!d||!name) return;
+      const inbound=cellNum(c[2]), outbound=cellNum(c[3]), calls=inbound+outbound, aht=cellSecs(c[8]);
+      days.push({ date:d, month:`${MONTHS[d.getMonth()]} ${d.getFullYear()}`, name, inbound, outbound,
+        inboundTime:cellSecs(c[4]), talkTime:cellSecs(c[6]), holdTime:cellSecs(c[7]),
+        // AHT from column AY, weighted by that day's calls when days are added up
+        ahtW: aht>0&&calls>0 ? aht*calls : 0, ahtCalls: aht>0&&calls>0 ? calls : 0 });
+      if(!latest||d>latest) latest=d;
+    });
+    // 2. each agent's shift per month from the Consolidated tab (closest earlier month if one is missing)
+    const known=[...new Set(days.map(x=>x.name))], byMonth={}, history={};
+    (shiftRows||[]).forEach(r=>{
+      const c=r.c||[], nm=matchAgentName(cellText(c[1]),known), mc=c[0], md=mc&&typeof mc.v==='string'&&/^Date\(/.test(mc.v)?parseSheetDate(mc.v):null, mo=md?`${MONTHS[md.getMonth()]} ${md.getFullYear()}`:normMonth(cellText(mc)), sh=normShift(cellText(c[2]));
+      if(!nm||!mo||!sh) return;
+      byMonth[nm+'|'+mo]=sh; (history[nm]=history[nm]||[]).push({key:monthSortKey(...mo.split(' ')),sh});
+    });
+    Object.values(history).forEach(l=>l.sort((x,y)=>x.key-y.key));
+    const shiftOf=(nm,mo)=>{ if(byMonth[nm+'|'+mo]) return byMonth[nm+'|'+mo]; const l=history[nm]; if(!l) return ''; const k=monthSortKey(...mo.split(' ')); const before=l.filter(x=>x.key<=k); return (before.length?before[before.length-1]:l[0]).sh; };
+    // 3. one row per agent per month, the shape the rest of the dashboard uses
+    const map=new Map();
+    days.forEach(x=>{
+      const key=x.name+'|'+x.month;
+      if(!map.has(key)) map.set(key,{month:x.month,name:x.name,inbound:0,inboundTime:0,outbound:0,talkTime:0,holdTime:0,ahtW:0,ahtCalls:0,shift:shiftOf(x.name,x.month),totalCalls:0,days:0});
+      const m=map.get(key);
+      m.inbound+=x.inbound; m.inboundTime+=x.inboundTime; m.outbound+=x.outbound; m.talkTime+=x.talkTime; m.holdTime+=x.holdTime;
+      m.ahtW+=x.ahtW; m.ahtCalls+=x.ahtCalls; m.totalCalls+=x.inbound+x.outbound; m.days++;
+    });
+    allData=[...map.values()].map(m=>Object.assign(m,{aht:m.ahtCalls?Math.round(m.ahtW/m.ahtCalls):0}));
+    if(latest) set('info-latest',latest.toLocaleDateString([],{month:'short',day:'numeric'}));
     const agents=[...new Set(allData.map(d=>d.name))].sort();
     const sel=document.getElementById('filter-agent');
     const prev=sel.value;
@@ -2904,7 +2948,6 @@ async function loadData(silent=false){
     document.getElementById('agent-options').innerHTML=agents.map(a=>`<option value="${esc(a)}"></option>`).join('');
     syncAgentSearch();
     _firstLoad=false;
-    loadLatestUpdate();
     set('info-synced',new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}));
     document.querySelector('.sync-status')?.classList.remove('is-stale');
     document.getElementById('error-area').innerHTML='';
@@ -2923,12 +2966,13 @@ async function loadData(silent=false){
 
 /* ── FILTERING & AGGREGATION ── */
 function monthMatches(r){ const p=r.month.trim().split(' '); return p[0]===currentMonth&&p[1]===currentYear; }
-// Sums rows per agent. AHT = (talk + hold) / calls on the summed values, so
-// zero-call rows no longer drag the average down.
+// Sums rows per agent. AHT = the daily AHT values from column AY averaged by
+// calls, so zero-call days don't drag the average down.
 function sumRows(list,base){
-  const a=Object.assign({inbound:0,inboundTime:0,outbound:0,talkTime:0,holdTime:0,totalCalls:0,shifts:new Set()},base||{});
-  list.forEach(r=>{ a.inbound+=r.inbound; a.inboundTime+=r.inboundTime; a.outbound+=r.outbound; a.talkTime+=r.talkTime; a.holdTime+=r.holdTime; a.totalCalls+=r.totalCalls; if(r.shift) a.shifts.add(r.shift); });
-  a.aht=a.totalCalls>0?Math.round((a.talkTime+a.holdTime)/a.totalCalls):0;
+  const a=Object.assign({inbound:0,inboundTime:0,outbound:0,talkTime:0,holdTime:0,totalCalls:0,ahtW:0,ahtCalls:0,shifts:new Set()},base||{});
+  list.forEach(r=>{ a.inbound+=r.inbound; a.inboundTime+=r.inboundTime; a.outbound+=r.outbound; a.talkTime+=r.talkTime; a.holdTime+=r.holdTime; a.totalCalls+=r.totalCalls; a.ahtW+=r.ahtW||0; a.ahtCalls+=r.ahtCalls||0; if(r.shift) a.shifts.add(r.shift); else if(r.shifts) r.shifts.forEach(x=>a.shifts.add(x)); });
+  // AHT = the sheet's daily AHT (column AY) averaged by calls
+  a.aht=a.ahtCalls>0?Math.round(a.ahtW/a.ahtCalls):0;
   return a;
 }
 function aggregateByAgent(data){
